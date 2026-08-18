@@ -1,0 +1,267 @@
+{
+  "generated_at": "2026-08-18T18:39:17.716302+00:00",
+  "blueprint": "playwright-js-v1",
+  "target_root": "playwright-framework",
+  "files": [
+    "config/framework-config.js",
+    "pages/base-page.js",
+    "utils/test-data-loader.js",
+    "testdata/expected-drugs.json",
+    "pages/home-page.js",
+    "pages/medicine-details-page.js",
+    "pages/medicine-search-page.js",
+    "pages/plan-selector-modal.js",
+    "fixtures/guest-flow.js",
+    "tests/drug-coverage.spec.js",
+    "playwright.config.js"
+  ],
+  "methods": [
+    {
+      "ir_ref": "method:HomePage.open",
+      "strategy": "generic-translation",
+      "target": "pages/home-page.js"
+    },
+    {
+      "ir_ref": "method:HomePage.clickExploreMyPrimeWithoutSigningIn",
+      "strategy": "generic-translation",
+      "target": "pages/home-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineDetailsPage.getDrugName",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-details-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineDetailsPage.getDoseInfo",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-details-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineDetailsPage.getFormularyStatusHeading",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-details-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineDetailsPage.getTierHeading",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-details-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineDetailsPage.goBackToMedicines",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-details-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.open",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.dismissSignInNagIfPresent",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.getSelectedHealthPlan",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.selectDrugList",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.searchAndSelectMedicine",
+      "strategy": "pattern:autocomplete-retry-search",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.selectStrength",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.setQuantity",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.selectFrequency",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.submitAddMedicineForm",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.addMedicine",
+      "strategy": "generic-translation",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.findResultCard",
+      "strategy": "pattern:scoped-component-container",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.getCardFormularyText",
+      "strategy": "pattern:scoped-component-read",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.getCardDoseInfo",
+      "strategy": "pattern:scoped-component-read",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:MedicineSearchPage.openMedicineDetails",
+      "strategy": "pattern:scoped-component-read",
+      "target": "pages/medicine-search-page.js"
+    },
+    {
+      "ir_ref": "method:PlanSelectorModal.selectHealthPlan",
+      "strategy": "generic-translation",
+      "target": "pages/plan-selector-modal.js"
+    },
+    {
+      "ir_ref": "method:PlanSelectorModal.isMedicarePartDPromptDisplayed",
+      "strategy": "generic-translation",
+      "target": "pages/plan-selector-modal.js"
+    },
+    {
+      "ir_ref": "method:PlanSelectorModal.selectMedicarePartD",
+      "strategy": "generic-translation",
+      "target": "pages/plan-selector-modal.js"
+    },
+    {
+      "ir_ref": "method:PlanSelectorModal.selectPlanAndContinue",
+      "strategy": "generic-translation",
+      "target": "pages/plan-selector-modal.js"
+    },
+    {
+      "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
+      "strategy": "generic-translation",
+      "target": "fixtures/guest-flow.js"
+    }
+  ],
+  "tim_coverage": [
+    {
+      "test_id": "TIM-001",
+      "spec": "tests/drug-coverage.spec.js",
+      "title": "TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
+      "steps": [
+        {
+          "step_id": "S1",
+          "realized_by": "fixtures/guest-flow.js"
+        },
+        {
+          "step_id": "S2",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "step_id": "S3",
+          "realized_by": "tests/drug-coverage.spec.js"
+        }
+      ],
+      "assertions": [
+        {
+          "assertion_id": "A1",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A2",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A3",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A4",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A5",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A6",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A7",
+          "realized_by": "tests/drug-coverage.spec.js"
+        }
+      ]
+    },
+    {
+      "test_id": "TIM-002",
+      "spec": "tests/drug-coverage.spec.js",
+      "title": "TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
+      "steps": [
+        {
+          "step_id": "S1",
+          "realized_by": "fixtures/guest-flow.js"
+        },
+        {
+          "step_id": "S2",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "step_id": "S3",
+          "realized_by": "tests/drug-coverage.spec.js"
+        }
+      ],
+      "assertions": [
+        {
+          "assertion_id": "A1",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A2",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A3",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A4",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A5",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A6",
+          "realized_by": "tests/drug-coverage.spec.js"
+        },
+        {
+          "assertion_id": "A7",
+          "realized_by": "tests/drug-coverage.spec.js"
+        }
+      ]
+    },
+    {
+      "test_id": "TIM-003",
+      "spec": "tests/drug-coverage.spec.js",
+      "title": "TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page",
+      "steps": [
+        {
+          "step_id": "S1",
+          "realized_by": "fixtures/guest-flow.js"
+        }
+      ],
+      "assertions": [
+        {
+          "assertion_id": "A1",
+          "realized_by": "tests/drug-coverage.spec.js"
+        }
+      ]
+    }
+  ]
+}

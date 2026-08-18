@@ -1,0 +1,46 @@
+{
+  "blueprint_id": "playwright-js-v1",
+  "description": "Enterprise-approved Playwright (JavaScript) blueprint: page-object model, shared fixtures, data-driven oracle files, JSON+HTML reporting, TIM traceability annotations.",
+  "target_framework": "playwright-js",
+  "conventions": {
+    "language": "javascript-esm",
+    "file_naming": "kebab-case",
+    "class_naming": "PascalCase, one page object per file under pages/",
+    "locator_style": "Locator fields initialized in the constructor; dynamic locators as parameterized methods",
+    "waits": "Rely on Playwright auto-waiting; explicit waits only where the legacy framework encoded a real timing quirk",
+    "test_entry": "Shared business flows are fixtures under fixtures/, never repeated in specs",
+    "test_data": "Oracle data in testdata/*.json, loaded through utils/test-data-loader.js",
+    "traceability": "Every generated spec carries TIM id in the title plus source/TIM annotations",
+    "assertions": "expect() with business-meaning failure messages"
+  },
+  "layout": {
+    "pages": "pages/",
+    "fixtures": "fixtures/",
+    "tests": "tests/",
+    "testdata": "testdata/",
+    "utils": "utils/",
+    "config": "config/"
+  },
+  "patterns": [
+    {
+      "name": "poll-populated-select",
+      "purpose": "Dropdowns that populate their options via AJAX after first render",
+      "implementation": "BasePage.selectOptionWhenPopulated"
+    },
+    {
+      "name": "conditional-dismiss",
+      "purpose": "Interstitials/nags that may or may not appear",
+      "implementation": "BasePage.isVisibleWithin + guarded click"
+    },
+    {
+      "name": "autocomplete-retry-search",
+      "purpose": "Autocomplete widgets that need real key events and can miss the first keystroke burst",
+      "implementation": "pressSequentially with clear-and-retype retry loop"
+    },
+    {
+      "name": "scoped-component",
+      "purpose": "Reading fields from a repeated card/row component matched by its title text",
+      "implementation": "locator().filter({ has: ... }) container + scoped child locators"
+    }
+  ]
+}

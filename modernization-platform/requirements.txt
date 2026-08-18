@@ -1,0 +1,5 @@
+﻿pydantic>=2.7
+anthropic>=0.60
+jsonschema>=4.21
+python-dotenv>=1.0
+streamlit>=1.40

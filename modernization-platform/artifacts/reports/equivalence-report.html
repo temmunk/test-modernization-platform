@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Behavioral Equivalence Report</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F4F7FB;color:#1A1A2E;margin:0;padding:2rem;}
+h1{color:#002060;} .cap{color:#6D6D6D;font-size:0.85rem;}
+.card{background:#fff;border:1px solid #D0DCF0;border-radius:12px;padding:1.2rem 1.5rem;margin:1rem 0;max-width:900px;}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+.card h3{color:#002060;margin:0;font-size:1.05rem;}
+table{border-collapse:collapse;font-size:0.85rem;margin:0.6rem 0;width:100%;}
+th,td{text-align:left;padding:0.35rem 0.7rem;border-bottom:1px solid #D0DCF0;}
+th{color:#002060;}
+ul{font-size:0.85rem;}
+.summary{display:flex;gap:1rem;margin:1rem 0;}
+.stat{background:#fff;border:1px solid #D0DCF0;border-radius:10px;padding:0.8rem 1.4rem;text-align:center;}
+.stat b{display:block;font-size:1.6rem;color:#0070C0;}
+</style></head><body>
+<h1>Behavioral Equivalence Report</h1>
+<p class="cap">DrugCoverageTests — assessed 2026-08-18T18:40:27.191939+00:00</p>
+<div class="summary">
+  <div class="stat"><b>3</b>Equivalent</div>
+  <div class="stat"><b>0</b>Partially</div>
+  <div class="stat"><b>0</b>Not equivalent</div>
+  <div class="stat"><b>0</b>Blocked</div>
+</div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>TIM-001 · Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage</h3>
+        <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
+      </div>
+      <p class="cap">Drug Coverage Lookup — intent confidence 0.87</p>
+      <table>
+        <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
+        <tr><td>Implementation</td>
+            <td>DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage</td>
+            <td>tests/drug-coverage.spec.js</td></tr>
+        <tr><td>Outcome</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.823s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.2s</td></tr>
+      </table>
+      <p><strong>Flow match:</strong> 3/3 steps
+         &nbsp; <strong>Assertion match:</strong> 7/7 assertions</p>
+      <ul><li>All 3 intent steps are realized in the generated framework.</li><li>All 7 business assertions are regenerated with the same oracle data.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
+      
+      <p><strong>Recommendation:</strong> Approve migration</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>TIM-002 · Brand drug (LIPITOR) is shown as not on the drug list and non-formulary</h3>
+        <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
+      </div>
+      <p class="cap">Drug Coverage Lookup — intent confidence 0.87</p>
+      <table>
+        <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
+        <tr><td>Implementation</td>
+            <td>DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary</td>
+            <td>tests/drug-coverage.spec.js</td></tr>
+        <tr><td>Outcome</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 17.699s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.11s</td></tr>
+      </table>
+      <p><strong>Flow match:</strong> 3/3 steps
+         &nbsp; <strong>Assertion match:</strong> 7/7 assertions</p>
+      <ul><li>All 3 intent steps are realized in the generated framework.</li><li>All 7 business assertions are regenerated with the same oracle data.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
+      
+      <p><strong>Recommendation:</strong> Approve migration</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>TIM-003 · Selected health plan is reflected on the Find Medicines page</h3>
+        <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
+      </div>
+      <p class="cap">Health Plan Selection — intent confidence 0.9</p>
+      <table>
+        <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
+        <tr><td>Implementation</td>
+            <td>DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage</td>
+            <td>tests/drug-coverage.spec.js</td></tr>
+        <tr><td>Outcome</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 11.019s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 9.23s</td></tr>
+      </table>
+      <p><strong>Flow match:</strong> 1/1 steps
+         &nbsp; <strong>Assertion match:</strong> 1/1 assertions</p>
+      <ul><li>All 1 intent steps are realized in the generated framework.</li><li>All 1 business assertions are regenerated with the same oracle data.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
+      
+      <p><strong>Recommendation:</strong> Approve migration</p>
+    </div>
+</body></html>

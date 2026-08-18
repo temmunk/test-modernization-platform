@@ -1,0 +1,36 @@
+{
+  "healthPlan": "BCBS Alabama",
+  "drugListName": "SourceRx 1.0 Drug Guide",
+  "drugs": [
+    {
+      "key": "LIPITOR_BRAND",
+      "searchTerm": "Lipitor",
+      "suggestionText": "LIPITOR",
+      "expectedName": "LIPITOR",
+      "strength": "10mg tablet",
+      "quantity": "",
+      "frequency": "month",
+      "expectedDoseInfo": "10mg tablet / 30 tablets over 30 days",
+      "relatedDrugName": "atorvastatin calcium",
+      "onDrugList": false,
+      "cardFormularyText": "Not on drug list, Non-formulary",
+      "detailFormularyHeading": "Not on drug list",
+      "detailTierHeading": "Non-formulary"
+    },
+    {
+      "key": "ATORVASTATIN_GENERIC",
+      "searchTerm": "atorvastatin",
+      "suggestionText": "atorvastatin calcium",
+      "expectedName": "atorvastatin calcium",
+      "strength": "20mg tablet",
+      "quantity": "30",
+      "frequency": "month",
+      "expectedDoseInfo": "20mg tablet / 30 tablets over 30 days",
+      "relatedDrugName": "LIPITOR",
+      "onDrugList": true,
+      "cardFormularyText": "On drug list, Tier 1/Preferred Generic",
+      "detailFormularyHeading": "On drug list",
+      "detailTierHeading": "Tier 1/Preferred Generic"
+    }
+  ]
+}

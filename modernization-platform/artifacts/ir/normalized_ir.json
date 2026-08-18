@@ -1,0 +1,1132 @@
+{
+  "ir_version": "1.0",
+  "source_framework": {
+    "kind": "selenium-java-testng",
+    "root": "selenium-framework",
+    "build": "maven",
+    "suite_file": "testng.xml"
+  },
+  "config": {
+    "file": "src/test/resources/config.properties",
+    "properties": {
+      "browser": "chrome",
+      "headless": "false",
+      "baseUrl": "https://www.myprime.com",
+      "explicitWaitSeconds": "15",
+      "pageLoadTimeoutSeconds": "30",
+      "healthPlan": "BCBS Alabama",
+      "isMedicarePartD": "No",
+      "drugList": "SourceRx 1.0 Drug Guide"
+    }
+  },
+  "test_data": {
+    "expected-drugs": {
+      "file": "src/test/resources/testdata/expected-drugs.json",
+      "content": {
+        "healthPlan": "BCBS Alabama",
+        "drugListName": "SourceRx 1.0 Drug Guide",
+        "drugs": [
+          {
+            "key": "LIPITOR_BRAND",
+            "searchTerm": "Lipitor",
+            "suggestionText": "LIPITOR",
+            "expectedName": "LIPITOR",
+            "strength": "10mg tablet",
+            "quantity": "",
+            "frequency": "month",
+            "expectedDoseInfo": "10mg tablet / 30 tablets over 30 days",
+            "relatedDrugName": "atorvastatin calcium",
+            "onDrugList": false,
+            "cardFormularyText": "Not on drug list, Non-formulary",
+            "detailFormularyHeading": "Not on drug list",
+            "detailTierHeading": "Non-formulary"
+          },
+          {
+            "key": "ATORVASTATIN_GENERIC",
+            "searchTerm": "atorvastatin",
+            "suggestionText": "atorvastatin calcium",
+            "expectedName": "atorvastatin calcium",
+            "strength": "20mg tablet",
+            "quantity": "30",
+            "frequency": "month",
+            "expectedDoseInfo": "20mg tablet / 30 tablets over 30 days",
+            "relatedDrugName": "LIPITOR",
+            "onDrugList": true,
+            "cardFormularyText": "On drug list, Tier 1/Preferred Generic",
+            "detailFormularyHeading": "On drug list",
+            "detailTierHeading": "Tier 1/Preferred Generic"
+          }
+        ]
+      }
+    }
+  },
+  "page_objects": [
+    {
+      "class_name": "HomePage",
+      "extends": "BasePage",
+      "doc": "https://www.myprime.com/ landing page, unauthenticated state.",
+      "file": "src/main/java/com/myprime/automation/pages/HomePage.java",
+      "locators": [
+        {
+          "id": "locator:HomePage.EXPLORE_MYPRIME_LINK",
+          "name": "EXPLORE_MYPRIME_LINK",
+          "strategy": "xpath",
+          "value": "//a[normalize-space(text())='explore MyPrime']",
+          "raw": "By.xpath(\"//a[normalize-space(text())='explore MyPrime']\")",
+          "file": "src/main/java/com/myprime/automation/pages/HomePage.java",
+          "line": 12
+        }
+      ],
+      "constants": {},
+      "constructor_waits": [],
+      "methods": [
+        {
+          "id": "method:HomePage.open",
+          "name": "open",
+          "returns": "HomePage",
+          "params": "",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/HomePage.java",
+          "line": 19,
+          "actions": [
+            {
+              "kind": "navigate",
+              "url_expr": "ConfigReader.baseUrl() + \"/\"",
+              "url": null
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "driver.get(ConfigReader.baseUrl() + \"/\");\n        return this;"
+        },
+        {
+          "id": "method:HomePage.clickExploreMyPrimeWithoutSigningIn",
+          "name": "clickExploreMyPrimeWithoutSigningIn",
+          "returns": "PlanSelectorModal",
+          "params": "",
+          "doc": "Clicks \"Or select a plan and explore MyPrime without signing in.\" which opens the health-plan-selection modal.",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/HomePage.java",
+          "line": 28,
+          "actions": [
+            {
+              "kind": "click",
+              "locator_ref": "locator:HomePage.EXPLORE_MYPRIME_LINK",
+              "args": []
+            },
+            {
+              "kind": "page_transition",
+              "to": "PlanSelectorModal"
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "click(EXPLORE_MYPRIME_LINK);\n        return new PlanSelectorModal(driver);"
+        }
+      ],
+      "id": "page:HomePage"
+    },
+    {
+      "class_name": "MedicineDetailsPage",
+      "extends": "BasePage",
+      "doc": "Medicine details page reached by clicking a drug name on the search results (hash route \"#medicine-detail;...\"). Shows dosage/quantity and the drug list (formulary) status in more detail than the summary card.",
+      "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+      "locators": [
+        {
+          "id": "locator:MedicineDetailsPage.HEADING",
+          "name": "HEADING",
+          "strategy": "id",
+          "value": "med-details-heading",
+          "raw": "By.id(\"med-details-heading\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 13
+        },
+        {
+          "id": "locator:MedicineDetailsPage.DRUG_NAME",
+          "name": "DRUG_NAME",
+          "strategy": "id",
+          "value": "med-name-result",
+          "raw": "By.id(\"med-name-result\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 14
+        },
+        {
+          "id": "locator:MedicineDetailsPage.DOSE_INFO",
+          "name": "DOSE_INFO",
+          "strategy": "id",
+          "value": "med-detail-dfs",
+          "raw": "By.id(\"med-detail-dfs\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 15
+        },
+        {
+          "id": "locator:MedicineDetailsPage.COVERAGE_CONTAINER",
+          "name": "COVERAGE_CONTAINER",
+          "strategy": "id",
+          "value": "detail-coverage-information",
+          "raw": "By.id(\"detail-coverage-information\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 16
+        },
+        {
+          "id": "locator:MedicineDetailsPage.FORMULARY_STATUS_HEADING",
+          "name": "FORMULARY_STATUS_HEADING",
+          "strategy": "cssSelector",
+          "value": "#detail-coverage-information > h3:nth-of-type(1)",
+          "raw": "By.cssSelector(\"#detail-coverage-information > h3:nth-of-type(1)\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 17
+        },
+        {
+          "id": "locator:MedicineDetailsPage.TIER_HEADING",
+          "name": "TIER_HEADING",
+          "strategy": "cssSelector",
+          "value": "#detail-coverage-information > h3:nth-of-type(2)",
+          "raw": "By.cssSelector(\"#detail-coverage-information > h3:nth-of-type(2)\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 19
+        },
+        {
+          "id": "locator:MedicineDetailsPage.BACK_TO_MEDICINES_LINK",
+          "name": "BACK_TO_MEDICINES_LINK",
+          "strategy": "id",
+          "value": "back-navigation-link",
+          "raw": "By.id(\"back-navigation-link\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 21
+        }
+      ],
+      "constants": {},
+      "constructor_waits": [
+        "HEADING"
+      ],
+      "methods": [
+        {
+          "id": "method:MedicineDetailsPage.getDrugName",
+          "name": "getDrugName",
+          "returns": "String",
+          "params": "",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 28,
+          "actions": [
+            {
+              "kind": "read_text",
+              "locator_ref": "locator:MedicineDetailsPage.DRUG_NAME",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "return getText(DRUG_NAME);"
+        },
+        {
+          "id": "method:MedicineDetailsPage.getDoseInfo",
+          "name": "getDoseInfo",
+          "returns": "String",
+          "params": "",
+          "doc": "e.g. \"20mg tablet / 30 tablets over 30 days\".",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 33,
+          "actions": [
+            {
+              "kind": "read_text",
+              "locator_ref": "locator:MedicineDetailsPage.DOSE_INFO",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "return getText(DOSE_INFO);"
+        },
+        {
+          "id": "method:MedicineDetailsPage.getFormularyStatusHeading",
+          "name": "getFormularyStatusHeading",
+          "returns": "String",
+          "params": "",
+          "doc": "e.g. \"On drug list\" or \"Not on drug list\".",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 38,
+          "actions": [
+            {
+              "kind": "wait_visible",
+              "locator_ref": "locator:MedicineDetailsPage.COVERAGE_CONTAINER",
+              "args": []
+            },
+            {
+              "kind": "read_text",
+              "locator_ref": "locator:MedicineDetailsPage.FORMULARY_STATUS_HEADING",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "waitVisible(COVERAGE_CONTAINER);\n        return getText(FORMULARY_STATUS_HEADING);"
+        },
+        {
+          "id": "method:MedicineDetailsPage.getTierHeading",
+          "name": "getTierHeading",
+          "returns": "String",
+          "params": "",
+          "doc": "e.g. \"Tier 1/Preferred Generic\" or \"Non-formulary\".",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 44,
+          "actions": [
+            {
+              "kind": "wait_visible",
+              "locator_ref": "locator:MedicineDetailsPage.COVERAGE_CONTAINER",
+              "args": []
+            },
+            {
+              "kind": "read_text",
+              "locator_ref": "locator:MedicineDetailsPage.TIER_HEADING",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "waitVisible(COVERAGE_CONTAINER);\n        return getText(TIER_HEADING);"
+        },
+        {
+          "id": "method:MedicineDetailsPage.goBackToMedicines",
+          "name": "goBackToMedicines",
+          "returns": "MedicineSearchPage",
+          "params": "",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "line": 49,
+          "actions": [
+            {
+              "kind": "click",
+              "locator_ref": "locator:MedicineDetailsPage.BACK_TO_MEDICINES_LINK",
+              "args": []
+            },
+            {
+              "kind": "page_transition",
+              "to": "MedicineSearchPage"
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "click(BACK_TO_MEDICINES_LINK);\n        return new MedicineSearchPage(driver);"
+        }
+      ],
+      "id": "page:MedicineDetailsPage"
+    },
+    {
+      "class_name": "MedicineSearchPage",
+      "extends": "BasePage",
+      "doc": "\"Find medicines\" page: https://www.myprime.com/en/medicines.html#find-medicine Flow modeled here: choose a drug list -> search a medicine by name -> pick the autocomplete suggestion -> fill in strength/quantity/frequency -> submit, which renders a result card showing dose info and formulary/drug-list status.",
+      "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+      "locators": [
+        {
+          "id": "locator:MedicineSearchPage.HEALTH_PLAN_TEXT",
+          "name": "HEALTH_PLAN_TEXT",
+          "strategy": "id",
+          "value": "selectedYearHealthPlanText",
+          "raw": "By.id(\"selectedYearHealthPlanText\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 22
+        },
+        {
+          "id": "locator:MedicineSearchPage.DRUG_LIST_DROPDOWN",
+          "name": "DRUG_LIST_DROPDOWN",
+          "strategy": "id",
+          "value": "new-drug-list-selector",
+          "raw": "By.id(\"new-drug-list-selector\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 24
+        },
+        {
+          "id": "locator:MedicineSearchPage.DRUG_LIST_APPLY_BUTTON",
+          "name": "DRUG_LIST_APPLY_BUTTON",
+          "strategy": "id",
+          "value": "drug-list-selector-button",
+          "raw": "By.id(\"drug-list-selector-button\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 25
+        },
+        {
+          "id": "locator:MedicineSearchPage.SEARCH_INPUT",
+          "name": "SEARCH_INPUT",
+          "strategy": "id",
+          "value": "medicine-search-query",
+          "raw": "By.id(\"medicine-search-query\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 27
+        },
+        {
+          "id": "locator:MedicineSearchPage.STRENGTH_DROPDOWN",
+          "name": "STRENGTH_DROPDOWN",
+          "strategy": "id",
+          "value": "medicine-search-form-strength",
+          "raw": "By.id(\"medicine-search-form-strength\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 29
+        },
+        {
+          "id": "locator:MedicineSearchPage.QUANTITY_INPUT",
+          "name": "QUANTITY_INPUT",
+          "strategy": "id",
+          "value": "medicine-search-form-quantity",
+          "raw": "By.id(\"medicine-search-form-quantity\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 30
+        },
+        {
+          "id": "locator:MedicineSearchPage.FREQUENCY_DROPDOWN",
+          "name": "FREQUENCY_DROPDOWN",
+          "strategy": "id",
+          "value": "medicine-search-form-frequency",
+          "raw": "By.id(\"medicine-search-form-frequency\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 31
+        },
+        {
+          "id": "locator:MedicineSearchPage.SUBMIT_ADD_MEDICINE",
+          "name": "SUBMIT_ADD_MEDICINE",
+          "strategy": "id",
+          "value": "medicine-search-form-submit",
+          "raw": "By.id(\"medicine-search-form-submit\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 32
+        },
+        {
+          "id": "locator:MedicineSearchPage.SIGN_IN_NAG_DISMISS",
+          "name": "SIGN_IN_NAG_DISMISS",
+          "strategy": "id",
+          "value": "prelogin-planselector-button",
+          "raw": "By.id(\"prelogin-planselector-button\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 37
+        },
+        {
+          "id": "locator:MedicineSearchPage.suggestion",
+          "name": "suggestion",
+          "strategy": "xpath",
+          "value": null,
+          "raw": "By.xpath( \"//a[contains(concat(' ', normalize-space(@class), ' '), ' result-row ') \" + \"and translate(normalize-space(.), '\" + UPPER + \"', '\" + LOWER + \"')='\" + exactSuggestionText.toLowerCase() + \"']\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 96
+        },
+        {
+          "id": "locator:MedicineSearchPage.card",
+          "name": "card",
+          "strategy": "xpath",
+          "value": null,
+          "raw": "By.xpath( \"//*[contains(@class,'medicine-information-container')]\" + \"[.//a[contains(@class,'medicine-name') and normalize-space(text())='\" + exactDrugName + \"']]\")",
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 151
+        }
+      ],
+      "constants": {
+        "SEARCH_RETRY_ATTEMPTS": 3,
+        "SUGGESTION_APPEAR_TIMEOUT": 6000
+      },
+      "constructor_waits": [],
+      "methods": [
+        {
+          "id": "method:MedicineSearchPage.open",
+          "name": "open",
+          "returns": "MedicineSearchPage",
+          "params": "",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 43,
+          "actions": [
+            {
+              "kind": "navigate",
+              "url_expr": "ConfigReader.baseUrl() + \"/en/medicines.html#find-medicine\"",
+              "url": null
+            },
+            {
+              "kind": "wait_visible",
+              "locator_ref": "locator:MedicineSearchPage.SEARCH_INPUT",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "driver.get(ConfigReader.baseUrl() + \"/en/medicines.html#find-medicine\");\n        waitVisible(SEARCH_INPUT);\n        dismissSignInNagIfPresent();\n        return this;"
+        },
+        {
+          "id": "method:MedicineSearchPage.dismissSignInNagIfPresent",
+          "name": "dismissSignInNagIfPresent",
+          "returns": "void",
+          "params": "",
+          "doc": "Best-effort dismissal of the sign-in nag described above. Safe to call defensively before any keyboard-driven interaction on this page.",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 54,
+          "actions": [
+            {
+              "kind": "check_visible",
+              "locator_ref": "locator:MedicineSearchPage.SIGN_IN_NAG_DISMISS",
+              "args": [
+                "Duration.ofSeconds(4)"
+              ]
+            },
+            {
+              "kind": "click",
+              "locator_ref": "locator:MedicineSearchPage.SIGN_IN_NAG_DISMISS",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": true,
+          "body": "if (isDisplayed(SIGN_IN_NAG_DISMISS, Duration.ofSeconds(4))) {\n            click(SIGN_IN_NAG_DISMISS);\n        }"
+        },
+        {
+          "id": "method:MedicineSearchPage.getSelectedHealthPlan",
+          "name": "getSelectedHealthPlan",
+          "returns": "String",
+          "params": "",
+          "doc": "Reads the \"Your health plan: X\" banner and returns just the plan name.",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 61,
+          "actions": [
+            {
+              "kind": "read_text",
+              "locator_ref": "locator:MedicineSearchPage.HEALTH_PLAN_TEXT",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "String fullText = getText(HEALTH_PLAN_TEXT);\n        return fullText.replace(\"Your health plan:\", \"\").trim();"
+        },
+        {
+          "id": "method:MedicineSearchPage.selectDrugList",
+          "name": "selectDrugList",
+          "returns": "MedicineSearchPage",
+          "params": "String drugListName",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 66,
+          "actions": [
+            {
+              "kind": "select_option",
+              "locator_ref": "locator:MedicineSearchPage.DRUG_LIST_DROPDOWN",
+              "args": [
+                "drugListName"
+              ]
+            },
+            {
+              "kind": "click",
+              "locator_ref": "locator:MedicineSearchPage.DRUG_LIST_APPLY_BUTTON",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "selectByVisibleText(DRUG_LIST_DROPDOWN, drugListName);\n        click(DRUG_LIST_APPLY_BUTTON);\n        return this;"
+        },
+        {
+          "id": "method:MedicineSearchPage.searchAndSelectMedicine",
+          "name": "searchAndSelectMedicine",
+          "returns": "MedicineSearchPage",
+          "params": "String searchTerm, String exactSuggestionText",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 89,
+          "actions": [
+            {
+              "kind": "type",
+              "locator_ref": "locator:MedicineSearchPage.SEARCH_INPUT",
+              "args": [
+                "searchTerm"
+              ]
+            },
+            {
+              "kind": "click",
+              "locator_ref": null,
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": true,
+          "body": "// The matched substring is wrapped in its own <span>, so the anchor's text is\n        // split across child nodes - normalize-space(.) is needed to see the full label,\n        // not normalize-space(text()) which only sees direct text-node children.\n        // The suggestion label's DOM text case (e.g. \"Atorvastatin Calcium\") doesn't match\n        // the case CSS renders it in (e.g. \"atorvastatin calcium\") or our oracle data's\n        // case (e.g. \"LIPITOR\"), so the comparison is done case-insensitively via translate().\n        By suggestion = By.xpath(\n                \"//a[contains(concat(' ', normalize-space(@class), ' '), ' result-row ') \"\n                        + \"and translate(normalize-space(.), '\" + UPPER + \"', '\" + LOWER + \"')='\"\n                        + exactSuggestionText.toLowerCase() + \"']\");\n\n        TimeoutException lastError = null;\n        for (int attempt = 1; attempt <= SEARCH_RETRY_ATTEMPTS; attempt++) {\n            dismissSignInNagIfPresent();\n            type(SEARCH_INPUT, searchTerm);\n            try {\n                new WebDriverWait(driver, SUGGESTION_APPEAR_TIMEOUT)\n                        .until(ExpectedConditions.elementToBeClickable(suggestion))\n                        .click();\n                return this;\n            } catch (TimeoutException e) {\n                lastError = e;\n            }\n        }\n        throw lastError;"
+        },
+        {
+          "id": "method:MedicineSearchPage.selectStrength",
+          "name": "selectStrength",
+          "returns": "MedicineSearchPage",
+          "params": "String strengthText",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 117,
+          "actions": [
+            {
+              "kind": "select_option",
+              "locator_ref": "locator:MedicineSearchPage.STRENGTH_DROPDOWN",
+              "args": [
+                "strengthText"
+              ]
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "selectByVisibleText(STRENGTH_DROPDOWN, strengthText);\n        return this;"
+        },
+        {
+          "id": "method:MedicineSearchPage.setQuantity",
+          "name": "setQuantity",
+          "returns": "MedicineSearchPage",
+          "params": "String quantity",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 122,
+          "actions": [
+            {
+              "kind": "type",
+              "locator_ref": "locator:MedicineSearchPage.QUANTITY_INPUT",
+              "args": [
+                "quantity"
+              ]
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "type(QUANTITY_INPUT, quantity);\n        return this;"
+        },
+        {
+          "id": "method:MedicineSearchPage.selectFrequency",
+          "name": "selectFrequency",
+          "returns": "MedicineSearchPage",
+          "params": "String frequencyText",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 127,
+          "actions": [
+            {
+              "kind": "select_option",
+              "locator_ref": "locator:MedicineSearchPage.FREQUENCY_DROPDOWN",
+              "args": [
+                "frequencyText"
+              ]
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "selectByVisibleText(FREQUENCY_DROPDOWN, frequencyText);\n        return this;"
+        },
+        {
+          "id": "method:MedicineSearchPage.submitAddMedicineForm",
+          "name": "submitAddMedicineForm",
+          "returns": "MedicineSearchPage",
+          "params": "",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 132,
+          "actions": [
+            {
+              "kind": "click",
+              "locator_ref": "locator:MedicineSearchPage.SUBMIT_ADD_MEDICINE",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "click(SUBMIT_ADD_MEDICINE);\n        return this;"
+        },
+        {
+          "id": "method:MedicineSearchPage.addMedicine",
+          "name": "addMedicine",
+          "returns": "MedicineSearchPage",
+          "params": "String searchTerm, String exactSuggestionText,\n                                           String strengthText, String quantity, String frequencyText",
+          "doc": "Full \"add a medicine\" flow in one call: search, pick suggestion, set strength/quantity/frequency, submit. Renders a result card for the drug.",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 141,
+          "actions": [],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "searchAndSelectMedicine(searchTerm, exactSuggestionText);\n        selectStrength(strengthText);\n        setQuantity(quantity);\n        selectFrequency(frequencyText);\n        return submitAddMedicineForm();"
+        },
+        {
+          "id": "method:MedicineSearchPage.findResultCard",
+          "name": "findResultCard",
+          "returns": "WebElement",
+          "params": "String exactDrugName",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 150,
+          "actions": [
+            {
+              "kind": "wait_visible",
+              "locator_ref": "locator:MedicineSearchPage.card",
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "By card = By.xpath(\n                \"//*[contains(@class,'medicine-information-container')]\"\n                        + \"[.//a[contains(@class,'medicine-name') and normalize-space(text())='\" + exactDrugName + \"']]\");\n        return waitVisible(card);"
+        },
+        {
+          "id": "method:MedicineSearchPage.getCardFormularyText",
+          "name": "getCardFormularyText",
+          "returns": "String",
+          "params": "String exactDrugName",
+          "doc": "e.g. \"Not on drug list, Non-formulary\" or \"On drug list, Tier 1/Preferred Generic\".",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 158,
+          "actions": [
+            {
+              "kind": "read_text",
+              "locator_ref": null,
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "WebElement card = findResultCard(exactDrugName);\n        return card.findElement(By.cssSelector(\"p.covered-on-drug-list\")).getText().trim();"
+        },
+        {
+          "id": "method:MedicineSearchPage.getCardDoseInfo",
+          "name": "getCardDoseInfo",
+          "returns": "String",
+          "params": "String exactDrugName",
+          "doc": "e.g. \"10mg tablet / 30 tablets over 30 days\".",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 164,
+          "actions": [
+            {
+              "kind": "read_text",
+              "locator_ref": null,
+              "args": []
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "WebElement card = findResultCard(exactDrugName);\n        return card.findElement(By.xpath(\".//span[contains(@id,'find-med-dfs')]\")).getText().trim();"
+        },
+        {
+          "id": "method:MedicineSearchPage.openMedicineDetails",
+          "name": "openMedicineDetails",
+          "returns": "MedicineDetailsPage",
+          "params": "String exactDrugName",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "line": 169,
+          "actions": [
+            {
+              "kind": "click",
+              "locator_ref": null,
+              "args": []
+            },
+            {
+              "kind": "page_transition",
+              "to": "MedicineDetailsPage"
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "WebElement card = findResultCard(exactDrugName);\n        card.findElement(By.cssSelector(\"a.medicine-name\")).click();\n        return new MedicineDetailsPage(driver);"
+        }
+      ],
+      "id": "page:MedicineSearchPage"
+    },
+    {
+      "class_name": "PlanSelectorModal",
+      "extends": "BasePage",
+      "doc": "\"What is your health plan or employer?\" modal shown after choosing to explore MyPrime without signing in. Some plans (e.g. BCBS Alabama) show a second required \"Medicare Part D\" dropdown; others don't, so callers should check {@link #isMedicarePartDPromptDisplayed()} before interacting with it.",
+      "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+      "locators": [
+        {
+          "id": "locator:PlanSelectorModal.HEALTH_PLAN_DROPDOWN",
+          "name": "HEALTH_PLAN_DROPDOWN",
+          "strategy": "id",
+          "value": "cwsi-plan",
+          "raw": "By.id(\"cwsi-plan\")",
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 16
+        },
+        {
+          "id": "locator:PlanSelectorModal.MEDICARE_PART_D_DROPDOWN",
+          "name": "MEDICARE_PART_D_DROPDOWN",
+          "strategy": "id",
+          "value": "cwsi-medicare-d",
+          "raw": "By.id(\"cwsi-medicare-d\")",
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 17
+        },
+        {
+          "id": "locator:PlanSelectorModal.CONTINUE_BUTTON",
+          "name": "CONTINUE_BUTTON",
+          "strategy": "cssSelector",
+          "value": "#plan-selector-form button.button-primary",
+          "raw": "By.cssSelector(\"#plan-selector-form button.button-primary\")",
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 18
+        }
+      ],
+      "constants": {},
+      "constructor_waits": [],
+      "methods": [
+        {
+          "id": "method:PlanSelectorModal.selectHealthPlan",
+          "name": "selectHealthPlan",
+          "returns": "PlanSelectorModal",
+          "params": "String planName",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 24,
+          "actions": [
+            {
+              "kind": "select_option",
+              "locator_ref": "locator:PlanSelectorModal.HEALTH_PLAN_DROPDOWN",
+              "args": [
+                "planName"
+              ]
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "selectByVisibleText(HEALTH_PLAN_DROPDOWN, planName);\n        return this;"
+        },
+        {
+          "id": "method:PlanSelectorModal.isMedicarePartDPromptDisplayed",
+          "name": "isMedicarePartDPromptDisplayed",
+          "returns": "boolean",
+          "params": "",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 29,
+          "actions": [
+            {
+              "kind": "check_visible",
+              "locator_ref": "locator:PlanSelectorModal.MEDICARE_PART_D_DROPDOWN",
+              "args": [
+                "Duration.ofSeconds(3)"
+              ]
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "return isDisplayed(MEDICARE_PART_D_DROPDOWN, Duration.ofSeconds(3));"
+        },
+        {
+          "id": "method:PlanSelectorModal.selectMedicarePartD",
+          "name": "selectMedicarePartD",
+          "returns": "PlanSelectorModal",
+          "params": "String yesNo",
+          "doc": "",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 33,
+          "actions": [
+            {
+              "kind": "select_option",
+              "locator_ref": "locator:PlanSelectorModal.MEDICARE_PART_D_DROPDOWN",
+              "args": [
+                "yesNo"
+              ]
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": false,
+          "body": "selectByVisibleText(MEDICARE_PART_D_DROPDOWN, yesNo);\n        return this;"
+        },
+        {
+          "id": "method:PlanSelectorModal.selectPlanAndContinue",
+          "name": "selectPlanAndContinue",
+          "returns": "HomePage",
+          "params": "String planName, String medicarePartDAnswer",
+          "doc": "Selects the plan, answers the Medicare Part D prompt when the chosen plan requires it, then submits. Lands back on the (now plan-scoped) home page.",
+          "is_test": false,
+          "test_description": null,
+          "file": "src/main/java/com/myprime/automation/pages/PlanSelectorModal.java",
+          "line": 42,
+          "actions": [
+            {
+              "kind": "click",
+              "locator_ref": "locator:PlanSelectorModal.CONTINUE_BUTTON",
+              "args": []
+            },
+            {
+              "kind": "page_transition",
+              "to": "HomePage"
+            }
+          ],
+          "assertions": [],
+          "has_control_flow": true,
+          "body": "selectHealthPlan(planName);\n        if (isMedicarePartDPromptDisplayed()) {\n            selectMedicarePartD(medicarePartDAnswer);\n        }\n        click(CONTINUE_BUTTON);\n        return new HomePage(driver);"
+        }
+      ],
+      "id": "page:PlanSelectorModal"
+    }
+  ],
+  "helpers": [
+    {
+      "id": "helper:BaseTest.goToFindMedicinesAsGuest",
+      "name": "goToFindMedicinesAsGuest",
+      "returns": "MedicineSearchPage",
+      "params": "",
+      "doc": "Drives the non-signed-in entry flow: home -> \"explore MyPrime without signing in\" -> pick the configured health plan -> land on Find medicines with the configured drug list applied. Every test starts from here.",
+      "is_test": false,
+      "test_description": null,
+      "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
+      "line": 38,
+      "actions": [
+        {
+          "kind": "page_transition",
+          "to": "HomePage"
+        },
+        {
+          "kind": "page_transition",
+          "to": "MedicineSearchPage"
+        }
+      ],
+      "assertions": [],
+      "has_control_flow": false,
+      "body": "HomePage homePage = new HomePage(driver).open();\n        homePage.clickExploreMyPrimeWithoutSigningIn()\n                .selectPlanAndContinue(ConfigReader.healthPlan(), ConfigReader.isMedicarePartD());\n\n        return new MedicineSearchPage(driver)\n                .open()\n                .selectDrugList(ConfigReader.drugList());",
+      "class_name": "BaseTest",
+      "class_doc": ""
+    }
+  ],
+  "tests": [
+    {
+      "id": "test:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage",
+      "name": "genericDrug_isOnDrugList_withCorrectTierAndDosage",
+      "returns": "void",
+      "params": "",
+      "doc": "",
+      "is_test": true,
+      "test_description": "Generic drug (atorvastatin calcium) should be on the plan's drug list with the correct dosage and Tier 1/Preferred Generic status",
+      "file": "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+      "line": 23,
+      "actions": [],
+      "assertions": [
+        {
+          "kind": "assertEquals",
+          "line": 30,
+          "actual_expr": "searchPage.getCardDoseInfo(expected.getExpectedName())",
+          "expected_expr": "expected.getExpectedDoseInfo()",
+          "message": "Dose info on the result card did not match expected dosage/quantity"
+        },
+        {
+          "kind": "assertEquals",
+          "line": 33,
+          "actual_expr": "searchPage.getCardFormularyText(expected.getExpectedName())",
+          "expected_expr": "expected.getCardFormularyText()",
+          "message": "Formulary status on the result card did not match expected value"
+        },
+        {
+          "kind": "assertEquals",
+          "line": 39,
+          "actual_expr": "detailsPage.getDrugName()",
+          "expected_expr": "expected.getExpectedName()",
+          "message": null
+        },
+        {
+          "kind": "assertEquals",
+          "line": 40,
+          "actual_expr": "detailsPage.getDoseInfo()",
+          "expected_expr": "expected.getExpectedDoseInfo()",
+          "message": null
+        },
+        {
+          "kind": "assertEquals",
+          "line": 41,
+          "actual_expr": "detailsPage.getFormularyStatusHeading()",
+          "expected_expr": "expected.getDetailFormularyHeading()",
+          "message": "Expected this generic to be marked \\\"On drug list\\\" on the details page"
+        },
+        {
+          "kind": "assertEquals",
+          "line": 43,
+          "actual_expr": "detailsPage.getTierHeading()",
+          "expected_expr": "expected.getDetailTierHeading()",
+          "message": null
+        },
+        {
+          "kind": "assertTrue",
+          "line": 44,
+          "condition_expr": "expected.isOnDrugList()",
+          "message": "Test data sanity check: this drug should be flagged onDrugList=true"
+        }
+      ],
+      "has_control_flow": false,
+      "body": "ExpectedDrug expected = TestDataLoader.findDrugByKey(\"ATORVASTATIN_GENERIC\");\n\n                MedicineSearchPage searchPage = goToFindMedicinesAsGuest()\n                                .addMedicine(expected.getSearchTerm(), expected.getSuggestionText(),\n                                                expected.getStrength(), expected.getQuantity(),\n                                                expected.getFrequency());\n\n                Assert.assertEquals(searchPage.getCardDoseInfo(expected.getExpectedName()),\n                                expected.getExpectedDoseInfo(),\n                                \"Dose info on the result card did not match expected dosage/quantity\");\n                Assert.assertEquals(searchPage.getCardFormularyText(expected.getExpectedName()),\n                                expected.getCardFormularyText(),\n                                \"Formulary status on the result card did not match expected value\");\n\n                MedicineDetailsPage detailsPage = searchPage.openMedicineDetails(expected.getExpectedName());\n\n                Assert.assertEquals(detailsPage.getDrugName(), expected.getExpectedName());\n                Assert.assertEquals(detailsPage.getDoseInfo(), expected.getExpectedDoseInfo());\n                Assert.assertEquals(detailsPage.getFormularyStatusHeading(), expected.getDetailFormularyHeading(),\n                                \"Expected this generic to be marked \\\"On drug list\\\" on the details page\");\n                Assert.assertEquals(detailsPage.getTierHeading(), expected.getDetailTierHeading());\n                Assert.assertTrue(expected.isOnDrugList(),\n                                \"Test data sanity check: this drug should be flagged onDrugList=true\");",
+      "class_name": "DrugCoverageTests",
+      "class_doc": "Covers the non-signed-in \"find medicines\" flow for the BCBS Alabama plan: choose plan -> search a drug -> verify dosage/quantity and drug-list (formulary) status against data captured directly from myprime.com. Expected values live in src/test/resources/testdata/expected-drugs.json so the oracle data is separated from the test logic."
+    },
+    {
+      "id": "test:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary",
+      "name": "brandDrug_isNotOnDrugList_nonFormulary",
+      "returns": "void",
+      "params": "",
+      "doc": "",
+      "is_test": true,
+      "test_description": "Brand drug (LIPITOR) should be Not on drug list / Non-formulary since its generic equivalent is the preferred option",
+      "file": "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+      "line": 51,
+      "actions": [],
+      "assertions": [
+        {
+          "kind": "assertEquals",
+          "line": 58,
+          "actual_expr": "searchPage.getCardDoseInfo(expected.getExpectedName())",
+          "expected_expr": "expected.getExpectedDoseInfo()",
+          "message": "Dose info on the result card did not match expected dosage/quantity"
+        },
+        {
+          "kind": "assertEquals",
+          "line": 61,
+          "actual_expr": "searchPage.getCardFormularyText(expected.getExpectedName())",
+          "expected_expr": "expected.getCardFormularyText()",
+          "message": "Formulary status on the result card did not match expected value"
+        },
+        {
+          "kind": "assertEquals",
+          "line": 67,
+          "actual_expr": "detailsPage.getDrugName()",
+          "expected_expr": "expected.getExpectedName()",
+          "message": null
+        },
+        {
+          "kind": "assertEquals",
+          "line": 68,
+          "actual_expr": "detailsPage.getDoseInfo()",
+          "expected_expr": "expected.getExpectedDoseInfo()",
+          "message": null
+        },
+        {
+          "kind": "assertEquals",
+          "line": 69,
+          "actual_expr": "detailsPage.getFormularyStatusHeading()",
+          "expected_expr": "expected.getDetailFormularyHeading()",
+          "message": "Expected this brand drug to be marked \\\"Not on drug list\\\" on the details page"
+        },
+        {
+          "kind": "assertEquals",
+          "line": 71,
+          "actual_expr": "detailsPage.getTierHeading()",
+          "expected_expr": "expected.getDetailTierHeading()",
+          "message": null
+        },
+        {
+          "kind": "assertFalse",
+          "line": 72,
+          "condition_expr": "expected.isOnDrugList()",
+          "message": "Test data sanity check: this drug should be flagged onDrugList=false"
+        }
+      ],
+      "has_control_flow": false,
+      "body": "ExpectedDrug expected = TestDataLoader.findDrugByKey(\"LIPITOR_BRAND\");\n\n                MedicineSearchPage searchPage = goToFindMedicinesAsGuest()\n                                .addMedicine(expected.getSearchTerm(), expected.getSuggestionText(),\n                                                expected.getStrength(), expected.getQuantity(),\n                                                expected.getFrequency());\n\n                Assert.assertEquals(searchPage.getCardDoseInfo(expected.getExpectedName()),\n                                expected.getExpectedDoseInfo(),\n                                \"Dose info on the result card did not match expected dosage/quantity\");\n                Assert.assertEquals(searchPage.getCardFormularyText(expected.getExpectedName()),\n                                expected.getCardFormularyText(),\n                                \"Formulary status on the result card did not match expected value\");\n\n                MedicineDetailsPage detailsPage = searchPage.openMedicineDetails(expected.getExpectedName());\n\n                Assert.assertEquals(detailsPage.getDrugName(), expected.getExpectedName());\n                Assert.assertEquals(detailsPage.getDoseInfo(), expected.getExpectedDoseInfo());\n                Assert.assertEquals(detailsPage.getFormularyStatusHeading(), expected.getDetailFormularyHeading(),\n                                \"Expected this brand drug to be marked \\\"Not on drug list\\\" on the details page\");\n                Assert.assertEquals(detailsPage.getTierHeading(), expected.getDetailTierHeading());\n                Assert.assertFalse(expected.isOnDrugList(),\n                                \"Test data sanity check: this drug should be flagged onDrugList=false\");",
+      "class_name": "DrugCoverageTests",
+      "class_doc": "Covers the non-signed-in \"find medicines\" flow for the BCBS Alabama plan: choose plan -> search a drug -> verify dosage/quantity and drug-list (formulary) status against data captured directly from myprime.com. Expected values live in src/test/resources/testdata/expected-drugs.json so the oracle data is separated from the test logic."
+    },
+    {
+      "id": "test:DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage",
+      "name": "selectedHealthPlan_isDisplayedOnFindMedicinesPage",
+      "returns": "void",
+      "params": "",
+      "doc": "",
+      "is_test": true,
+      "test_description": "The health plan chosen in the pre-login modal should be reflected on the Find medicines page",
+      "file": "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+      "line": 79,
+      "actions": [],
+      "assertions": [
+        {
+          "kind": "assertEquals",
+          "line": 81,
+          "actual_expr": "searchPage.getSelectedHealthPlan()",
+          "expected_expr": "ConfigReader.healthPlan()",
+          "message": "Find medicines page did not show the health plan selected during the guest flow"
+        }
+      ],
+      "has_control_flow": false,
+      "body": "MedicineSearchPage searchPage = goToFindMedicinesAsGuest();\n\n                Assert.assertEquals(searchPage.getSelectedHealthPlan(), ConfigReader.healthPlan(),\n                                \"Find medicines page did not show the health plan selected during the guest flow\");",
+      "class_name": "DrugCoverageTests",
+      "class_doc": "Covers the non-signed-in \"find medicines\" flow for the BCBS Alabama plan: choose plan -> search a drug -> verify dosage/quantity and drug-list (formulary) status against data captured directly from myprime.com. Expected values live in src/test/resources/testdata/expected-drugs.json so the oracle data is separated from the test logic."
+    }
+  ],
+  "support_classes": [
+    {
+      "class_name": "ConfigReader",
+      "file": "src/main/java/com/myprime/automation/config/ConfigReader.java",
+      "doc": "Loads src/test/resources/config.properties once and exposes typed accessors."
+    },
+    {
+      "class_name": "DriverManager",
+      "file": "src/main/java/com/myprime/automation/driver/DriverManager.java",
+      "doc": "ThreadLocal WebDriver factory. Keeping the driver ThreadLocal lets tests run in parallel later (TestNG parallel=\"methods\") without sharing browser state."
+    },
+    {
+      "class_name": "ExpectedDrug",
+      "file": "src/main/java/com/myprime/automation/model/ExpectedDrug.java",
+      "doc": "Expected drug data captured manually from the live MyPrime site for a given health plan + drug list, used as the oracle for coverage assertions. See src/test/resources/testdata/expected-drugs.json."
+    },
+    {
+      "class_name": "ExpectedDrugData",
+      "file": "src/main/java/com/myprime/automation/model/ExpectedDrugData.java",
+      "doc": "Root of testdata/expected-drugs.json."
+    },
+    {
+      "class_name": "BasePage",
+      "file": "src/main/java/com/myprime/automation/pages/BasePage.java",
+      "doc": "Shared driver/wait plumbing for every page object. Keeping locators and flows in the concrete page classes; this only holds reusable actions."
+    },
+    {
+      "class_name": "TestDataLoader",
+      "file": "src/main/java/com/myprime/automation/utils/TestDataLoader.java",
+      "doc": "Reads src/test/resources/testdata/expected-drugs.json."
+    },
+    {
+      "class_name": "ExtentManager",
+      "file": "src/test/java/com/myprime/automation/reporting/ExtentManager.java",
+      "doc": "One shared ExtentReports instance for the whole suite, with a per-thread \"current test\" node so parallel TestNG execution doesn't cross-log."
+    },
+    {
+      "class_name": "ExtentReportListener",
+      "file": "src/test/java/com/myprime/automation/reporting/ExtentReportListener.java",
+      "doc": "Bridges TestNG's test lifecycle to an ExtentReports HTML report: one ExtentTest node per @Test method, with the failure screenshot BaseTest would otherwise only save to disk also embedded inline in the report."
+    }
+  ]
+}

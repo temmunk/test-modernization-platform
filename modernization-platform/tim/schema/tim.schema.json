@@ -1,0 +1,521 @@
+{
+  "$defs": {
+    "Assertion": {
+      "properties": {
+        "assertion_id": {
+          "description": "Stable id within the test, e.g. 'A1'",
+          "title": "Assertion Id",
+          "type": "string"
+        },
+        "intent": {
+          "description": "Business intent slug, e.g. 'verify_formulary_status'",
+          "title": "Intent",
+          "type": "string"
+        },
+        "description": {
+          "description": "What business outcome is being verified",
+          "title": "Description",
+          "type": "string"
+        },
+        "actual_binding_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "IR id of the getter/read the actual value comes from, e.g. 'method:MedicineDetailsPage.getTierHeading'",
+          "title": "Actual Binding Ref"
+        },
+        "expected_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Test-data/config reference for the expected value, e.g. 'data:drugs.LIPITOR_BRAND.detailTierHeading'",
+          "title": "Expected Ref"
+        },
+        "expected_literal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Literal expected value when not data-driven",
+          "title": "Expected Literal"
+        },
+        "failure_meaning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What it means for the business if this assertion fails",
+          "title": "Failure Meaning"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "intent",
+        "description",
+        "confidence"
+      ],
+      "title": "Assertion",
+      "type": "object"
+    },
+    "Channel": {
+      "enum": [
+        "ui",
+        "api"
+      ],
+      "title": "Channel",
+      "type": "string"
+    },
+    "Evidence": {
+      "description": "Trace from an AI-inferred value back to deterministic source facts.",
+      "properties": {
+        "ir_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Id of the IR node this was inferred from, e.g. 'method:MedicineSearchPage.addMedicine'",
+          "title": "Ir Ref"
+        },
+        "file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Source file (repo-relative)",
+          "title": "File"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-based line in the source file",
+          "title": "Line"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short verbatim snippet supporting the inference",
+          "title": "Quote"
+        }
+      },
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Precondition": {
+      "properties": {
+        "intent": {
+          "description": "Machine-friendly intent slug, e.g. 'guest_plan_selected'",
+          "title": "Intent",
+          "type": "string"
+        },
+        "description": {
+          "description": "Business-language description of the required state",
+          "title": "Description",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "intent",
+        "description",
+        "confidence"
+      ],
+      "title": "Precondition",
+      "type": "object"
+    },
+    "Provenance": {
+      "properties": {
+        "model_version": {
+          "description": "LLM model id used for intent recovery",
+          "title": "Model Version",
+          "type": "string"
+        },
+        "prompt_version": {
+          "description": "Version of the prompt template used",
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "extracted_at": {
+          "description": "ISO-8601 timestamp of extraction",
+          "title": "Extracted At",
+          "type": "string"
+        },
+        "review_status": {
+          "$ref": "#/$defs/ReviewStatus",
+          "default": "pending"
+        },
+        "reviewer_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewer Notes"
+        }
+      },
+      "required": [
+        "model_version",
+        "prompt_version",
+        "extracted_at"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "ReviewStatus": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "ReviewStatus",
+      "type": "string"
+    },
+    "Risk": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Risk",
+      "type": "string"
+    },
+    "SourceTrace": {
+      "properties": {
+        "framework": {
+          "description": "e.g. 'selenium-java-testng'",
+          "title": "Framework",
+          "type": "string"
+        },
+        "test_class": {
+          "title": "Test Class",
+          "type": "string"
+        },
+        "test_method": {
+          "title": "Test Method",
+          "type": "string"
+        },
+        "files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "framework",
+        "test_class",
+        "test_method"
+      ],
+      "title": "SourceTrace",
+      "type": "object"
+    },
+    "Step": {
+      "properties": {
+        "step_id": {
+          "description": "Stable id within the test, e.g. 'S1'",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "intent": {
+          "description": "Business intent slug, e.g. 'search_medicine'",
+          "title": "Intent",
+          "type": "string"
+        },
+        "description": {
+          "description": "What this step means in business terms",
+          "title": "Description",
+          "type": "string"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel",
+          "default": "ui"
+        },
+        "binding_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "IR id of the technical construct realizing this step, e.g. 'method:MedicineSearchPage.addMedicine'",
+          "title": "Binding Ref"
+        },
+        "input_refs": {
+          "description": "References into the test-data catalog, e.g. 'data:drugs.ATORVASTATIN_GENERIC.searchTerm' or 'config:healthPlan'",
+          "items": {
+            "type": "string"
+          },
+          "title": "Input Refs",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "step_id",
+        "intent",
+        "description",
+        "confidence"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "TestDataRequirement": {
+      "properties": {
+        "ref": {
+          "description": "Catalog reference, e.g. 'data:drugs.LIPITOR_BRAND'",
+          "title": "Ref",
+          "type": "string"
+        },
+        "description": {
+          "description": "Why the test needs this data",
+          "title": "Description",
+          "type": "string"
+        },
+        "oracle": {
+          "default": false,
+          "description": "True if this data is the expected-outcome oracle",
+          "title": "Oracle",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ref",
+        "description"
+      ],
+      "title": "TestDataRequirement",
+      "type": "object"
+    },
+    "TimTest": {
+      "description": "One framework-neutral test intent \u2014 the durable strategic asset.",
+      "properties": {
+        "tim_version": {
+          "default": "1.0",
+          "title": "Tim Version",
+          "type": "string"
+        },
+        "test_id": {
+          "description": "Stable id, e.g. 'TIM-001'",
+          "title": "Test Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Business-language test name",
+          "title": "Name",
+          "type": "string"
+        },
+        "business_capability": {
+          "description": "Business capability under test, e.g. 'Drug Coverage Lookup'",
+          "title": "Business Capability",
+          "type": "string"
+        },
+        "description": {
+          "description": "One-paragraph business summary of what this test proves",
+          "title": "Description",
+          "type": "string"
+        },
+        "risk": {
+          "$ref": "#/$defs/Risk",
+          "default": "medium"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel",
+          "default": "ui"
+        },
+        "preconditions": {
+          "items": {
+            "$ref": "#/$defs/Precondition"
+          },
+          "title": "Preconditions",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "assertions": {
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "test_data": {
+          "items": {
+            "$ref": "#/$defs/TestDataRequirement"
+          },
+          "title": "Test Data",
+          "type": "array"
+        },
+        "reusable_capabilities": {
+          "description": "IR ids of shared flows this test reuses, e.g. 'helper:BaseTest.goToFindMedicinesAsGuest'",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reusable Capabilities",
+          "type": "array"
+        },
+        "dependencies": {
+          "description": "External dependencies, e.g. 'live site: https://www.myprime.com'",
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceTrace"
+        },
+        "overall_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Overall Confidence",
+          "type": "number"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "test_id",
+        "name",
+        "business_capability",
+        "description",
+        "source",
+        "overall_confidence",
+        "provenance"
+      ],
+      "title": "TimTest",
+      "type": "object"
+    }
+  },
+  "description": "A set of TIM tests recovered from one source estate ingestion.",
+  "properties": {
+    "tim_version": {
+      "default": "1.0",
+      "title": "Tim Version",
+      "type": "string"
+    },
+    "suite_name": {
+      "title": "Suite Name",
+      "type": "string"
+    },
+    "business_domain": {
+      "description": "e.g. 'Pharmacy benefits \u2014 medicine coverage'",
+      "title": "Business Domain",
+      "type": "string"
+    },
+    "application_under_test": {
+      "description": "e.g. 'MyPrime.com guest flow'",
+      "title": "Application Under Test",
+      "type": "string"
+    },
+    "tests": {
+      "items": {
+        "$ref": "#/$defs/TimTest"
+      },
+      "title": "Tests",
+      "type": "array"
+    }
+  },
+  "required": [
+    "suite_name",
+    "business_domain",
+    "application_under_test",
+    "tests"
+  ],
+  "title": "TimSuite",
+  "type": "object"
+}

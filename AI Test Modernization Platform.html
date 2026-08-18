@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Test Modernization Platform — Hackathon</title>
+<style>
+:root {
+  --navy:  #002060;
+  --ib:    #0070C0;
+  --teal:  #007B8E;
+  --green: #00703C;
+  --amber: #C55A11;
+  --gold:  #FFC000;
+  --s0: #6D6D6D;
+  --s1: #007B8E;
+  --s2: #0070C0;
+  --s3: #002060;
+  --s4: #FFC000;
+  --light:  #F4F7FB;
+  --border: #D0DCF0;
+  --text:   #1A1A2E;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--light);
+  line-height: 1.6;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--ib) 100%);
+  color: #fff;
+  padding: 2rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0,32,96,0.3);
+}
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.header h1 span { color: var(--gold); }
+.header .tagline {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-top: 0.3rem;
+}
+.header .badge {
+  background: var(--gold);
+  color: var(--navy);
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+/* Vertical Tab Layout */
+.main-container {
+  display: flex;
+  min-height: calc(100vh - 100px);
+}
+
+/* Vertical Tabs */
+.vtabs {
+  width: 260px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  padding: 1rem 0;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.vtab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.85rem 1.4rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+.vtab-btn:hover { background: var(--light); color: var(--ib); }
+.vtab-btn.active {
+  background: var(--light);
+  border-left-color: var(--ib);
+  color: var(--navy);
+  font-weight: 700;
+}
+.vtab-btn .tab-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Tab Content */
+.tab-content-area {
+  flex: 1;
+  padding: 2.5rem 3rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+.tab-panel { display: none; animation: fadeIn 0.3s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Section Headers */
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+}
+.section-subtitle {
+  font-size: 1rem;
+  color: var(--s0);
+  margin-bottom: 2rem;
+}
+
+/* Cards */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,32,96,0.04);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+.card-header h3 {
+  font-size: 1.1rem;
+  color: var(--navy);
+}
+.card-header .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Grid layouts */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+/* Pipeline */
+.pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 2rem 0;
+  overflow-x: auto;
+}
+.pipeline-step {
+  flex: 1;
+  min-width: 140px;
+  padding: 1.2rem 1rem;
+  text-align: center;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
+}
+.pipeline-step:first-child { clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%); }
+.pipeline-step .step-num { font-size: 1.4rem; font-weight: 800; display: block; }
+.pipeline-step .step-label { display: block; margin-top: 0.3rem; }
+
+/* Evolution stages */
+.evolution {
+  display: flex;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.evo-stage {
+  flex: 1;
+  border-radius: 10px;
+  padding: 1.2rem;
+  color: #fff;
+  position: relative;
+}
+.evo-stage h4 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+.evo-stage p { font-size: 0.8rem; opacity: 0.9; }
+.evo-stage .stage-num {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+/* Tables */
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 1rem 0;
+}
+.matrix-table th {
+  background: var(--navy);
+  color: #fff;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+.matrix-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.matrix-table tr:nth-child(even) td { background: var(--light); }
+.badge-yes { background: var(--green); color: #fff; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+.badge-no { background: var(--s0); color: #fff; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+.badge-opt { background: var(--amber); color: #fff; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+
+/* Tech stack */
+.tech-pill {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  border-radius: 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 0.2rem;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+/* Stat boxes */
+.stat-box {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.stat-box .stat-val {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ib);
+}
+.stat-box .stat-label {
+  font-size: 0.8rem;
+  color: var(--s0);
+  margin-top: 0.3rem;
+}
+
+/* Architecture diagram */
+.arch-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+.arch-node {
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: center;
+  min-width: 280px;
+}
+.arch-arrow {
+  font-size: 1.2rem;
+  color: var(--ib);
+}
+
+/* Principle list */
+.principle-list {
+  list-style: none;
+  counter-reset: principle;
+}
+.principle-list li {
+  counter-increment: principle;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  margin-bottom: 0.5rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  font-size: 0.9rem;
+}
+.principle-list li::before {
+  content: counter(principle);
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: var(--ib);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Demo steps */
+.demo-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.demo-step-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ib);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.demo-step-content h4 { font-size: 0.95rem; color: var(--navy); }
+.demo-step-content p { font-size: 0.83rem; color: var(--s0); }
+
+/* Code block */
+.code-block {
+  background: var(--navy);
+  color: #e0e8f8;
+  padding: 1.2rem 1.5rem;
+  border-radius: 8px;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  line-height: 1.7;
+  margin: 1rem 0;
+}
+.code-block .kw { color: var(--gold); }
+.code-block .str { color: #7ec8e3; }
+.code-block .cmt { color: #6a9fb5; }
+
+/* Horizontal sub-tabs within panels */
+.htabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.htab-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: var(--s0);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+.htab-btn:hover { color: var(--ib); }
+.htab-btn.active { color: var(--navy); border-bottom-color: var(--ib); }
+.htab-panel { display: none; }
+.htab-panel.active { display: block; }
+
+/* Callout */
+.callout {
+  background: linear-gradient(135deg, rgba(0,112,192,0.08), rgba(255,192,0,0.08));
+  border-left: 4px solid var(--gold);
+  padding: 1.2rem 1.5rem;
+  border-radius: 0 8px 8px 0;
+  margin: 1.5rem 0;
+}
+.callout strong { color: var(--navy); }
+
+/* Risk table */
+.risk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.risk-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+.risk-item h4 { font-size: 0.9rem; color: var(--navy); }
+.risk-item p { font-size: 0.8rem; color: var(--s0); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .evolution { flex-direction: column; }
+  .pipeline { flex-direction: column; }
+  .pipeline-step { clip-path: none !important; border-radius: 8px; }
+}
+@media (max-width: 768px) {
+  .main-container { flex-direction: column; }
+  .vtabs { width: 100%; height: auto; position: static; display: flex; overflow-x: auto; padding: 0; }
+  .vtab-btn { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .vtab-btn.active { border-bottom-color: var(--ib); border-left-color: transparent; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>AI Test <span>Modernization</span> Platform</h1>
+    <div class="tagline">Understand Legacy → Recover Intent → Rationalize → Regenerate → Validate → Govern</div>
+  </div>
+  <div class="badge">Hackathon 2026</div>
+</div>
+
+<div class="main-container">
+  <!-- Vertical Navigation Tabs -->
+  <nav class="vtabs">
+    <button class="vtab-btn active" data-tab="problem" onclick="switchTab('problem')">
+      <span class="tab-icon" style="background:var(--amber);color:#fff;">!</span>
+      Problem Space
+    </button>
+    <button class="vtab-btn" data-tab="evolution" onclick="switchTab('evolution')">
+      <span class="tab-icon" style="background:var(--teal);color:#fff;">↗</span>
+      Idea Evolution
+    </button>
+    <button class="vtab-btn" data-tab="solution" onclick="switchTab('solution')">
+      <span class="tab-icon" style="background:var(--ib);color:#fff;">◆</span>
+      Solution Vision
+    </button>
+    <button class="vtab-btn" data-tab="architecture" onclick="switchTab('architecture')">
+      <span class="tab-icon" style="background:var(--navy);color:#fff;">⬡</span>
+      Architecture
+    </button>
+    <button class="vtab-btn" data-tab="tim" onclick="switchTab('tim')">
+      <span class="tab-icon" style="background:var(--gold);color:var(--navy);">★</span>
+      Test Intent Model
+    </button>
+    <button class="vtab-btn" data-tab="mvp" onclick="switchTab('mvp')">
+      <span class="tab-icon" style="background:var(--green);color:#fff;">▶</span>
+      MVP Strategy
+    </button>
+    <button class="vtab-btn" data-tab="demo" onclick="switchTab('demo')">
+      <span class="tab-icon" style="background:var(--ib);color:#fff;">▷</span>
+      Demo Flow
+    </button>
+    <button class="vtab-btn" data-tab="tech" onclick="switchTab('tech')">
+      <span class="tab-icon" style="background:var(--s0);color:#fff;">⚙</span>
+      Tech Stack
+    </button>
+    <button class="vtab-btn" data-tab="differentiators" onclick="switchTab('differentiators')">
+      <span class="tab-icon" style="background:var(--teal);color:#fff;">◈</span>
+      Differentiators
+    </button>
+    <button class="vtab-btn" data-tab="roadmap" onclick="switchTab('roadmap')">
+      <span class="tab-icon" style="background:var(--navy);color:var(--gold);">⟶</span>
+      Roadmap
+    </button>
+    <button class="vtab-btn" data-tab="value" onclick="switchTab('value')">
+      <span class="tab-icon" style="background:var(--green);color:#fff;">$</span>
+      Business Value
+    </button>
+    <button class="vtab-btn" data-tab="risks" onclick="switchTab('risks')">
+      <span class="tab-icon" style="background:var(--amber);color:#fff;">⚠</span>
+      Risks &amp; Controls
+    </button>
+  </nav>
+
+  <!-- Tab Content Area -->
+  <main class="tab-content-area">
+
+    <!-- PROBLEM SPACE -->
+    <section class="tab-panel active" id="panel-problem">
+      <h2 class="section-title">The Enterprise Problem</h2>
+      <p class="section-subtitle">Why legacy test migration is fundamentally broken</p>
+
+      <div class="callout">
+        <strong>Core Insight:</strong> The real enterprise problem is not code conversion — it is <strong>test-estate modernization</strong>.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="dot" style="background:var(--amber)"></span>
+            <h3>Legacy Automation Sprawl</h3>
+          </div>
+          <p style="font-size:0.88rem;">Enterprises accumulate automation across UFT, Selenium, Cypress, Playwright, Robot Framework, Tosca, and custom frameworks — creating fragmented, costly estates.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="dot" style="background:var(--amber)"></span>
+            <h3>Traditional Migration Fails</h3>
+          </div>
+          <p style="font-size:0.88rem;">Point-to-point conversion (Source → Target) ignores duplicate tests, framework mismatches, obsolete flows, and doesn't prove behavioral equivalence.</p>
+        </div>
+      </div>
+
+      <h3 style="color:var(--navy);margin:1.5rem 0 1rem;font-size:1.1rem;">Six Limitations of Traditional Migration</h3>
+      <div class="grid-3">
+        <div class="card" style="border-left:3px solid var(--amber);">
+          <p style="font-size:0.82rem;"><strong>1.</strong> Framework constructs rarely map one-to-one</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--amber);">
+          <p style="font-size:0.82rem;"><strong>2.</strong> Legacy suites contain obsolete, duplicate, and low-value tests</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--amber);">
+          <p style="font-size:0.82rem;"><strong>3.</strong> Syntax conversion ≠ equivalent business validation</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--amber);">
+          <p style="font-size:0.82rem;"><strong>4.</strong> Generated tests may violate target engineering standards</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--amber);">
+          <p style="font-size:0.82rem;"><strong>5.</strong> Enterprise becomes locked into yet another framework</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--amber);">
+          <p style="font-size:0.82rem;"><strong>6.</strong> No mechanism to control future test-estate degradation</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- IDEA EVOLUTION -->
+    <section class="tab-panel" id="panel-evolution">
+      <h2 class="section-title">Idea Evolution</h2>
+      <p class="section-subtitle">From simple converter to enterprise modernization platform</p>
+
+      <div class="evolution">
+        <div class="evo-stage" style="background:var(--s0);">
+          <span class="stage-num">1</span>
+          <h4>Point-to-Point</h4>
+          <p>UFT → Selenium<br>Basic code translation</p>
+        </div>
+        <div class="evo-stage" style="background:var(--s1);">
+          <span class="stage-num">2</span>
+          <h4>Framework-Agnostic</h4>
+          <p>Source → Intent Model → Any Target</p>
+        </div>
+        <div class="evo-stage" style="background:var(--s2);">
+          <span class="stage-num">3</span>
+          <h4>AI Modernization</h4>
+          <p>Rationalize before migrate: retain, retire, merge, redesign</p>
+        </div>
+        <div class="evo-stage" style="background:var(--s3);">
+          <span class="stage-num">4</span>
+          <h4>Continuous Intelligence</h4>
+          <p>Ongoing estate health, duplication detection, governance</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:2rem;">
+        <strong>Key Shift:</strong> Do not migrate code. <strong>Preserve intent and regenerate implementation.</strong> Framework-specific code is temporary. Test intent is the durable asset.
+      </div>
+
+      <div class="card" style="margin-top:1.5rem;">
+        <h3 style="color:var(--navy);margin-bottom:1rem;">Stage 2: The Canonical Intermediate</h3>
+        <div class="code-block">
+<span class="cmt">// Framework-neutral pipeline</span>
+<span class="kw">Source Framework</span> → <span class="str">Test Intent Model</span> → <span class="kw">Target Framework</span>
+
+<span class="cmt">// Examples:</span>
+UFT        → TIM → Selenium
+UFT        → TIM → Playwright
+Selenium   → TIM → Playwright
+Cypress    → TIM → Enterprise Custom
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLUTION VISION -->
+    <section class="tab-panel" id="panel-solution">
+      <h2 class="section-title">Solution Vision</h2>
+      <p class="section-subtitle">AI Test Modernization Platform</p>
+
+      <div class="callout">
+        <strong>Vision:</strong> A framework-agnostic platform that understands legacy automation, extracts business test intent, rationalizes the estate, regenerates tests to enterprise standards, validates behavioral equivalence, and continuously governs quality.
+      </div>
+
+      <h3 style="color:var(--navy);margin:1.5rem 0 1rem;">End-to-End Pipeline</h3>
+      <div class="pipeline">
+        <div class="pipeline-step" style="background:var(--s0);">
+          <span class="step-num">1</span>
+          <span class="step-label">Ingest Legacy</span>
+        </div>
+        <div class="pipeline-step" style="background:var(--s1);">
+          <span class="step-num">2</span>
+          <span class="step-label">AI Understanding</span>
+        </div>
+        <div class="pipeline-step" style="background:var(--s1);">
+          <span class="step-num">3</span>
+          <span class="step-label">Test Intent Model</span>
+        </div>
+        <div class="pipeline-step" style="background:var(--s2);">
+          <span class="step-num">4</span>
+          <span class="step-label">Rationalize</span>
+        </div>
+        <div class="pipeline-step" style="background:var(--s2);">
+          <span class="step-num">5</span>
+          <span class="step-label">Generate</span>
+        </div>
+        <div class="pipeline-step" style="background:var(--s3);">
+          <span class="step-num">6</span>
+          <span class="step-label">Validate</span>
+        </div>
+        <div class="pipeline-step" style="background:var(--s3);">
+          <span class="step-num">7</span>
+          <span class="step-label">Govern</span>
+        </div>
+      </div>
+
+      <h3 style="color:var(--navy);margin:2rem 0 1rem;">Core Design Principles</h3>
+      <ul class="principle-list">
+        <li>Semantic core over framework coupling</li>
+        <li>Deterministic processing before AI where possible</li>
+        <li>Structured AI outputs over free-form responses</li>
+        <li>Evidence over AI confidence alone</li>
+        <li>Human approval for material modernization decisions</li>
+        <li>Regeneration over mechanical translation</li>
+        <li>Enterprise standards are first-class inputs</li>
+        <li>Every AI decision must be explainable and traceable</li>
+      </ul>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section class="tab-panel" id="panel-architecture">
+      <h2 class="section-title">Platform Architecture</h2>
+      <p class="section-subtitle">10 independently evolvable products</p>
+
+      <div class="arch-flow">
+        <div class="arch-node" style="background:var(--s0);color:#fff;">Legacy Automation Estate (UFT / Selenium / Cypress / Tosca / Robot)</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--s1);color:#fff;">[1] Source Adapters → Normalized Technical IR</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--s2);color:#fff;">[2] AI Understanding Engine</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--gold);color:var(--navy);font-weight:800;">[3] Test Intent Model — Canonical Semantic Layer</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--amber);color:#fff;">[4] Rationalization Engine — Retain / Retire / Merge / Migrate</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--teal);color:#fff;">[5] Enterprise Blueprint + [6] Generation Engine</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--s2);color:#fff;">[7] Execution Layer + [8] Behavioral Equivalence</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--s3);color:#fff;">[9] Human Review Workbench</div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-node" style="background:var(--green);color:#fff;">[10] Continuous Test Governance</div>
+      </div>
+
+      <div class="grid-2" style="margin-top:2rem;">
+        <div class="card">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">Adapter Framework</h3>
+          <div class="code-block">
+<span class="kw">SourceAdapter</span>
+  discover()
+  parse()
+  extract_dependencies()
+  extract_objects()
+  extract_assertions()
+  extract_test_data()
+  normalize()
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">AI Understanding</h3>
+          <p style="font-size:0.85rem;margin-bottom:0.8rem;">Converts technical constructs to business semantics:</p>
+          <div class="code-block">
+<span class="cmt">// Legacy UFT:</span>
+Browser(...) → Page(...) → WebEdit.Set → WebButton.Click
+
+<span class="cmt">// Recovered Intent:</span>
+<span class="kw">Business:</span> <span class="str">Claim Approval</span>
+<span class="kw">Pre:</span>     Authorized examiner
+<span class="kw">Action:</span>  Search and open claim
+<span class="kw">Action:</span>  Approve claim
+<span class="kw">Assert:</span>  Status = Approved
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEST INTENT MODEL -->
+    <section class="tab-panel" id="panel-tim">
+      <h2 class="section-title">Test Intent Model (TIM)</h2>
+      <p class="section-subtitle">The most strategically important platform asset</p>
+
+      <div class="callout">
+        <strong>Principle:</strong> TIM is not another programming language. It models <strong>what the test means</strong>, retaining enough technical metadata for regeneration and validation.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color:var(--navy);margin-bottom:1rem;">Illustrative Schema</h3>
+          <div class="code-block">
+{
+  <span class="str">"test_id"</span>: "TIM-001",
+  <span class="str">"name"</span>: "Approve eligible claim",
+  <span class="str">"business_capability"</span>: "Claim Approval",
+  <span class="str">"preconditions"</span>: [...],
+  <span class="str">"steps"</span>: [
+    {
+      <span class="str">"intent"</span>: "search_claim",
+      <span class="str">"channel"</span>: "ui",
+      <span class="str">"input_refs"</span>: [...],
+      <span class="str">"evidence_refs"</span>: [...]
+    }
+  ],
+  <span class="str">"assertions"</span>: [
+    {
+      <span class="str">"intent"</span>: "verify_claim_status",
+      <span class="str">"expected"</span>: "Approved"
+    }
+  ],
+  <span class="str">"confidence"</span>: {...},
+  <span class="str">"source"</span>: { "framework": "UFT" }
+}
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--navy);margin-bottom:1rem;">TIM Captures</h3>
+          <table class="matrix-table">
+            <tr><td>Business journey</td></tr>
+            <tr><td>Preconditions</td></tr>
+            <tr><td>Actions &amp; interactions</td></tr>
+            <tr><td>Assertions &amp; expected outcomes</td></tr>
+            <tr><td>Test data requirements</td></tr>
+            <tr><td>UI/API channel</td></tr>
+            <tr><td>Dependencies</td></tr>
+            <tr><td>Reusable capabilities</td></tr>
+            <tr><td>Source traceability</td></tr>
+            <tr><td>Risk &amp; criticality</td></tr>
+            <tr><td>Extraction confidence</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1.5rem;">
+        <h3 style="color:var(--navy);margin-bottom:0.8rem;">AI Confidence Guardrail</h3>
+        <p style="font-size:0.85rem;margin-bottom:0.8rem;">Never allow AI-inferred semantics to silently become "fact." Every value stores:</p>
+        <div class="code-block">
+<span class="kw">value</span> | <span class="kw">confidence</span> | <span class="kw">evidence</span> | <span class="kw">model_version</span> | <span class="kw">prompt_version</span> | <span class="kw">review_status</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MVP STRATEGY -->
+    <section class="tab-panel" id="panel-mvp">
+      <h2 class="section-title">MVP Strategy</h2>
+      <p class="section-subtitle">Prove the hypothesis, not the enterprise platform</p>
+
+      <!-- Horizontal sub-tabs -->
+      <div class="htabs">
+        <button class="htab-btn active" onclick="switchHtab(this, 'mvp-scope')">Scope</button>
+        <button class="htab-btn" onclick="switchHtab(this, 'mvp-success')">Success Criteria</button>
+        <button class="htab-btn" onclick="switchHtab(this, 'mvp-not')">Not Needed</button>
+      </div>
+
+      <div class="htab-panel active" id="htab-mvp-scope">
+        <div class="callout">
+          <strong>MVP Scope:</strong> UFT → Test Intent Model → Selenium/Playwright → Behavioral Validation
+        </div>
+        <h3 style="color:var(--navy);margin:1rem 0;">Supported Patterns</h3>
+        <div class="grid-3">
+          <div class="card" style="text-align:center;padding:1rem;"><strong>Login &amp; Navigation</strong></div>
+          <div class="card" style="text-align:center;padding:1rem;"><strong>Form Interaction</strong></div>
+          <div class="card" style="text-align:center;padding:1rem;"><strong>Tables</strong></div>
+          <div class="card" style="text-align:center;padding:1rem;"><strong>Data-Driven Tests</strong></div>
+          <div class="card" style="text-align:center;padding:1rem;"><strong>Assertions</strong></div>
+          <div class="card" style="text-align:center;padding:1rem;"><strong>Reusable Functions</strong></div>
+        </div>
+
+        <h3 style="color:var(--navy);margin:1.5rem 0 1rem;">Three Hypotheses to Prove</h3>
+        <div class="grid-3">
+          <div class="stat-box" style="border-top:4px solid var(--teal);">
+            <div class="stat-val" style="color:var(--teal);font-size:1.3rem;">H1</div>
+            <div class="stat-label">Legacy → useful framework-neutral intent representation</div>
+          </div>
+          <div class="stat-box" style="border-top:4px solid var(--ib);">
+            <div class="stat-val" style="color:var(--ib);font-size:1.3rem;">H2</div>
+            <div class="stat-label">Intent → maintainable automation in multiple targets</div>
+          </div>
+          <div class="stat-box" style="border-top:4px solid var(--green);">
+            <div class="stat-val" style="color:var(--green);font-size:1.3rem;">H3</div>
+            <div class="stat-label">Platform provides behavioral equivalence evidence</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="htab-panel" id="htab-mvp-success">
+        <h3 style="color:var(--navy);margin-bottom:1rem;">8 Success Criteria</h3>
+        <div class="grid-2">
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>1.</strong> UFT test can be ingested</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>2.</strong> Technical constructs extracted deterministically</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>3.</strong> AI recovers understandable test intent</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>4.</strong> Intent stored in framework-neutral schema</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>5.</strong> Same intent generates multiple target implementations</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>6.</strong> Generated automation can execute</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>7.</strong> Legacy and modern execution compared</p></div>
+          <div class="card" style="border-left:3px solid var(--green);"><p style="font-size:0.85rem;"><strong>8.</strong> Reviewer sees why migration is equivalent or not</p></div>
+        </div>
+      </div>
+
+      <div class="htab-panel" id="htab-mvp-not">
+        <h3 style="color:var(--navy);margin-bottom:1rem;">What the MVP Does NOT Need</h3>
+        <div class="grid-3">
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Enterprise vector database</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Complex RAG pipeline</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Multi-agent orchestration</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Knowledge graph</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Kubernetes</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Event streaming</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Fine-tuned models</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Large-scale observability</p></div>
+          <div class="card" style="border-left:3px solid var(--s0);"><p style="font-size:0.82rem;">Complex model routing</p></div>
+        </div>
+        <div class="callout" style="margin-top:1.5rem;">
+          <strong>Principle:</strong> Add complexity only when the use case proves it is necessary — not because an architecture diagram is expected to contain it.
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO FLOW -->
+    <section class="tab-panel" id="panel-demo">
+      <h2 class="section-title">Demo Flow</h2>
+      <p class="section-subtitle">One complete story in 10 steps</p>
+
+      <div class="demo-step">
+        <div class="demo-step-num">1</div>
+        <div class="demo-step-content">
+          <h4>Upload Legacy Test</h4>
+          <p>Select an existing UFT test from the sample corpus</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num">2</div>
+        <div class="demo-step-content">
+          <h4>Deterministic Extraction</h4>
+          <p>Show parsed functions, objects, data, checkpoints, and dependencies</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num">3</div>
+        <div class="demo-step-content">
+          <h4>AI Intent Recovery</h4>
+          <p>Display business-level intent recovered by LLM with confidence scores</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num">4</div>
+        <div class="demo-step-content">
+          <h4>Framework-Neutral TIM</h4>
+          <p>Show the canonical Test Intent Model with traceability links</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num" style="background:var(--teal);">5</div>
+        <div class="demo-step-content">
+          <h4>Select Target Framework</h4>
+          <p>User picks Selenium or Playwright as the target</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num" style="background:var(--teal);">6</div>
+        <div class="demo-step-content">
+          <h4>Enterprise Blueprint Generation</h4>
+          <p>Generate tests using enterprise-approved patterns, page objects, and conventions</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num" style="background:var(--green);">7</div>
+        <div class="demo-step-content">
+          <h4>Execute Generated Test</h4>
+          <p>Run the modern automation and capture execution evidence</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num" style="background:var(--green);">8</div>
+        <div class="demo-step-content">
+          <h4>Compare with Legacy</h4>
+          <p>Side-by-side comparison with legacy execution evidence</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num" style="background:var(--navy);">9</div>
+        <div class="demo-step-content">
+          <h4>Equivalence Assessment</h4>
+          <p>Explainable behavioral equivalence: flow match, assertion match, data behavior</p>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="demo-step-num" style="background:var(--navy);">10</div>
+        <div class="demo-step-content">
+          <h4>Approve &amp; Optionally Re-target</h4>
+          <p>Reviewer approves migration. Bonus: regenerate same TIM into second framework</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <strong>Finale:</strong> Generating the same TIM into a second target framework visually proves the architecture is framework-agnostic.
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section class="tab-panel" id="panel-tech">
+      <h2 class="section-title">Technology Stack</h2>
+      <p class="section-subtitle">MVP lightweight stack — enterprise-ready architecture</p>
+
+      <div class="htabs">
+        <button class="htab-btn active" onclick="switchHtab(this, 'tech-mvp')">MVP Stack</button>
+        <button class="htab-btn" onclick="switchHtab(this, 'tech-enterprise')">Enterprise Stack</button>
+        <button class="htab-btn" onclick="switchHtab(this, 'tech-repo')">Repo Structure</button>
+      </div>
+
+      <div class="htab-panel active" id="htab-tech-mvp">
+        <div class="grid-2">
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">Development</h3>
+            <span class="tech-pill" style="border-color:var(--ib);">VS Code</span>
+            <span class="tech-pill" style="border-color:var(--ib);">GitHub</span>
+            <span class="tech-pill" style="border-color:var(--ib);">GitHub Copilot</span>
+            <span class="tech-pill" style="border-color:var(--ib);">Python</span>
+            <span class="tech-pill" style="border-color:var(--ib);">GitHub Actions</span>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">Backend</h3>
+            <span class="tech-pill" style="border-color:var(--teal);">FastAPI</span>
+            <span class="tech-pill" style="border-color:var(--teal);">Pydantic</span>
+            <span class="tech-pill" style="border-color:var(--teal);">SQLite</span>
+            <span class="tech-pill" style="border-color:var(--teal);">JSON Schema</span>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">AI</h3>
+            <span class="tech-pill" style="border-color:var(--gold);">1 Approved LLM</span>
+            <span class="tech-pill" style="border-color:var(--gold);">Prompt Templates</span>
+            <span class="tech-pill" style="border-color:var(--gold);">Structured JSON Output</span>
+            <span class="tech-pill" style="border-color:var(--gold);">Schema Validation</span>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">UI &amp; Execution</h3>
+            <span class="tech-pill" style="border-color:var(--green);">React / Streamlit</span>
+            <span class="tech-pill" style="border-color:var(--green);">Playwright</span>
+            <span class="tech-pill" style="border-color:var(--green);">Selenium</span>
+            <span class="tech-pill" style="border-color:var(--green);">Pytest</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="htab-panel" id="htab-tech-enterprise">
+        <div class="grid-2">
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">Application</h3>
+            <span class="tech-pill">React/TypeScript UI</span>
+            <span class="tech-pill">Python/FastAPI Services</span>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">AI Platform</h3>
+            <span class="tech-pill">Model Gateway</span>
+            <span class="tech-pill">RAG</span>
+            <span class="tech-pill">Vector Store</span>
+            <span class="tech-pill">Prompt Registry</span>
+            <span class="tech-pill">Evaluation</span>
+            <span class="tech-pill">Guardrails</span>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">Data</h3>
+            <span class="tech-pill">PostgreSQL</span>
+            <span class="tech-pill">Cloud Object Store</span>
+            <span class="tech-pill">Vector Search</span>
+            <span class="tech-pill">Graph (conditional)</span>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy);margin-bottom:0.8rem;">Integration</h3>
+            <span class="tech-pill">GitHub/GitLab</span>
+            <span class="tech-pill">Jira/ADO</span>
+            <span class="tech-pill">CI/CD</span>
+            <span class="tech-pill">Enterprise IAM</span>
+            <span class="tech-pill">Secrets Manager</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="htab-panel" id="htab-tech-repo">
+        <div class="code-block">
+ai-test-modernization/
+├── adapters/
+│   └── uft/
+├── parsers/
+├── tim/
+│   ├── schema/
+│   ├── models/
+│   └── validators/
+├── understanding/
+│   ├── prompts/
+│   └── services/
+├── blueprints/
+│   ├── selenium/
+│   └── playwright/
+├── generators/
+├── execution/
+├── equivalence/
+├── review_ui/
+├── samples/
+│   └── uft/
+├── tests/
+├── docs/
+└── README.md
+        </div>
+      </div>
+    </section>
+
+    <!-- DIFFERENTIATORS -->
+    <section class="tab-panel" id="panel-differentiators">
+      <h2 class="section-title">Strategic Differentiators</h2>
+      <p class="section-subtitle">What makes this more than "AI that generates tests"</p>
+
+      <div class="grid-2">
+        <div class="card" style="border-top:4px solid var(--gold);">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">🎯 Test Intent Model</h3>
+          <p style="font-size:0.85rem;">Framework-neutral semantic representation of what tests mean — the durable strategic asset independent of any framework generation.</p>
+        </div>
+        <div class="card" style="border-top:4px solid var(--amber);">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">🔍 Estate Rationalization</h3>
+          <p style="font-size:0.85rem;">AI determines whether tests deserve migration before consuming effort: retain, retire, merge, repair, redesign, or replace.</p>
+        </div>
+        <div class="card" style="border-top:4px solid var(--ib);">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">🏗️ Enterprise Blueprint</h3>
+          <p style="font-size:0.85rem;">Target isn't just "Playwright" — it's Playwright + TypeScript + page objects + enterprise logging + approved patterns + CI/CD conventions.</p>
+        </div>
+        <div class="card" style="border-top:4px solid var(--green);">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">✓ Behavioral Equivalence</h3>
+          <p style="font-size:0.85rem;">Verifies regenerated tests prove the same business behavior — not just that code compiles and runs.</p>
+        </div>
+        <div class="card" style="border-top:4px solid var(--teal);">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">📋 Explainability</h3>
+          <p style="font-size:0.85rem;">Every extracted intent, recommendation, and equivalence decision traces back to source evidence with confidence scoring.</p>
+        </div>
+        <div class="card" style="border-top:4px solid var(--navy);">
+          <h3 style="color:var(--navy);margin-bottom:0.8rem;">♾️ Continuous Governance</h3>
+          <p style="font-size:0.85rem;">Ongoing platform — not a one-time migration utility. Detects duplication, flakiness, architecture drift, and coverage gaps.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <strong>Market White Space:</strong> Legacy Estate Understanding + Test Rationalization + Framework-Neutral Intent + Enterprise-Aware Regeneration + Behavioral Equivalence + Continuous Governance — combined as a closed-loop platform.
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="tab-panel" id="panel-roadmap">
+      <h2 class="section-title">Delivery Roadmap</h2>
+      <p class="section-subtitle">Phased evolution from MVP to enterprise platform</p>
+
+      <div style="position:relative;padding-left:2rem;border-left:3px solid var(--border);margin:2rem 0;">
+        <div style="margin-bottom:2rem;position:relative;">
+          <div style="position:absolute;left:-2.65rem;top:0;width:20px;height:20px;border-radius:50%;background:var(--teal);"></div>
+          <div class="card" style="margin-left:1rem;">
+            <h3 style="color:var(--teal);">Phase 1 — Prove Intent Abstraction</h3>
+            <p style="font-size:0.85rem;margin-top:0.5rem;">UFT → TIM → Selenium/Playwright. Prove framework neutrality.</p>
+          </div>
+        </div>
+        <div style="margin-bottom:2rem;position:relative;">
+          <div style="position:absolute;left:-2.65rem;top:0;width:20px;height:20px;border-radius:50%;background:var(--ib);"></div>
+          <div class="card" style="margin-left:1rem;">
+            <h3 style="color:var(--ib);">Phase 2 — Prove Trust</h3>
+            <p style="font-size:0.85rem;margin-top:0.5rem;">Add execution and behavioral equivalence. Prove generated automation can be validated.</p>
+          </div>
+        </div>
+        <div style="margin-bottom:2rem;position:relative;">
+          <div style="position:absolute;left:-2.65rem;top:0;width:20px;height:20px;border-radius:50%;background:var(--navy);"></div>
+          <div class="card" style="margin-left:1rem;">
+            <h3 style="color:var(--navy);">Phase 3 — Prove Modernization Value</h3>
+            <p style="font-size:0.85rem;margin-top:0.5rem;">Add rationalization and estate analytics. Reduce unnecessary automation instead of blind migration.</p>
+          </div>
+        </div>
+        <div style="margin-bottom:2rem;position:relative;">
+          <div style="position:absolute;left:-2.65rem;top:0;width:20px;height:20px;border-radius:50%;background:var(--amber);"></div>
+          <div class="card" style="margin-left:1rem;">
+            <h3 style="color:var(--amber);">Phase 4 — Enterprise Productization</h3>
+            <p style="font-size:0.85rem;margin-top:0.5rem;">Enterprise blueprints, additional adapters, RAG, scalable execution, governance, security, integrations.</p>
+          </div>
+        </div>
+        <div style="margin-bottom:1rem;position:relative;">
+          <div style="position:absolute;left:-2.65rem;top:0;width:20px;height:20px;border-radius:50%;background:var(--gold);"></div>
+          <div class="card" style="margin-left:1rem;">
+            <h3 style="color:var(--gold);">Phase 5 — Continuous Intelligence</h3>
+            <p style="font-size:0.85rem;margin-top:0.5rem;">Ongoing estate monitoring, recommendations, impact analysis, architecture compliance, AI-assisted remediation.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="color:var(--navy);margin:1.5rem 0 1rem;">MVP Build Order</h3>
+      <div class="pipeline" style="flex-wrap:wrap;">
+        <div class="pipeline-step" style="background:var(--s1);min-width:120px;"><span class="step-num">1</span><span class="step-label">TIM Schema</span></div>
+        <div class="pipeline-step" style="background:var(--s1);min-width:120px;"><span class="step-num">2</span><span class="step-label">UFT Adapter</span></div>
+        <div class="pipeline-step" style="background:var(--s1);min-width:120px;"><span class="step-num">3</span><span class="step-label">Extraction</span></div>
+        <div class="pipeline-step" style="background:var(--s2);min-width:120px;"><span class="step-num">4</span><span class="step-label">AI Understanding</span></div>
+        <div class="pipeline-step" style="background:var(--s2);min-width:120px;"><span class="step-num">5</span><span class="step-label">TIM Validation</span></div>
+        <div class="pipeline-step" style="background:var(--s3);min-width:120px;"><span class="step-num">6</span><span class="step-label">Generator</span></div>
+        <div class="pipeline-step" style="background:var(--s3);min-width:120px;"><span class="step-num">7</span><span class="step-label">Execution</span></div>
+        <div class="pipeline-step" style="background:var(--navy);min-width:120px;"><span class="step-num">8</span><span class="step-label">Equivalence</span></div>
+        <div class="pipeline-step" style="background:var(--navy);min-width:120px;"><span class="step-num">9</span><span class="step-label">Review UI</span></div>
+        <div class="pipeline-step" style="background:var(--gold);color:var(--navy);min-width:120px;"><span class="step-num">10</span><span class="step-label">2nd Target</span></div>
+      </div>
+    </section>
+
+    <!-- BUSINESS VALUE -->
+    <section class="tab-panel" id="panel-value">
+      <h2 class="section-title">Business Value</h2>
+      <p class="section-subtitle">Measurable enterprise outcomes</p>
+
+      <div class="grid-3">
+        <div class="stat-box" style="border-top:4px solid var(--green);">
+          <div class="stat-val">↓</div>
+          <div class="stat-label">Reduced modernization effort</div>
+        </div>
+        <div class="stat-box" style="border-top:4px solid var(--ib);">
+          <div class="stat-val">↓</div>
+          <div class="stat-label">Reduced legacy tool dependency</div>
+        </div>
+        <div class="stat-box" style="border-top:4px solid var(--teal);">
+          <div class="stat-val">↓</div>
+          <div class="stat-label">Reduced automation maintenance</div>
+        </div>
+        <div class="stat-box" style="border-top:4px solid var(--gold);">
+          <div class="stat-val">↑</div>
+          <div class="stat-label">Improved reuse &amp; coverage confidence</div>
+        </div>
+        <div class="stat-box" style="border-top:4px solid var(--navy);">
+          <div class="stat-val">↑</div>
+          <div class="stat-label">Faster modern framework adoption</div>
+        </div>
+        <div class="stat-box" style="border-top:4px solid var(--amber);">
+          <div class="stat-val">↓</div>
+          <div class="stat-label">Redundant tests eliminated</div>
+        </div>
+      </div>
+
+      <h3 style="color:var(--navy);margin:2rem 0 1rem;">MVP vs Enterprise Capability Matrix</h3>
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>MVP</th>
+            <th>Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>UFT ingestion</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>Additional source adapters</td><td><span class="badge-no">No</span></td><td><span class="badge-yes">Yes</span></td></tr>
+          <tr><td>Deterministic parsing</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>LLM intent extraction</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>Test Intent Model</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>Target generation</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>2nd target framework</td><td><span class="badge-opt">Demo</span></td><td><span class="badge-yes">Yes</span></td></tr>
+          <tr><td>Behavioral validation</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>Human review</td><td><span class="badge-yes">Required</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>Rationalization</td><td><span class="badge-opt">Optional</span></td><td><span class="badge-yes">Required</span></td></tr>
+          <tr><td>RAG / Vector DB</td><td><span class="badge-no">No</span></td><td><span class="badge-opt">Conditional</span></td></tr>
+          <tr><td>Multi-agent orchestration</td><td><span class="badge-no">No</span></td><td><span class="badge-opt">Conditional</span></td></tr>
+          <tr><td>Continuous governance</td><td><span class="badge-opt">Vision</span></td><td><span class="badge-yes">Yes</span></td></tr>
+          <tr><td>RBAC / Audit</td><td><span class="badge-opt">Basic</span></td><td><span class="badge-yes">Yes</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Positioning:</strong> AI-powered Test Modernization Platform that understands legacy automation, preserves business test intent, rationalizes the estate, regenerates into enterprise-approved architectures, and validates behavioral equivalence before adoption.
+      </div>
+    </section>
+
+    <!-- RISKS -->
+    <section class="tab-panel" id="panel-risks">
+      <h2 class="section-title">Risks &amp; Controls</h2>
+      <p class="section-subtitle">Known risks with established mitigations</p>
+
+      <div class="card">
+        <div class="risk-item">
+          <div class="risk-icon" style="background:var(--amber);color:#fff;">⚠</div>
+          <div>
+            <h4>Hallucinated Test Intent</h4>
+            <p><strong>Control:</strong> Deterministic source evidence, structured schemas, confidence scoring, human review</p>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon" style="background:var(--amber);color:#fff;">⚠</div>
+          <div>
+            <h4>Generated Code Changes Behavior</h4>
+            <p><strong>Control:</strong> Execution-based behavioral validation, not just pass/fail comparison</p>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon" style="background:var(--amber);color:#fff;">⚠</div>
+          <div>
+            <h4>Sensitive Data Reaching External Models</h4>
+            <p><strong>Control:</strong> Data classification, redaction/tokenization, approved model endpoints, enterprise security policy</p>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon" style="background:var(--s0);color:#fff;">△</div>
+          <div>
+            <h4>Over-Engineering</h4>
+            <p><strong>Control:</strong> Phased architecture, explicit MVP boundaries, no premature complexity</p>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon" style="background:var(--s0);color:#fff;">△</div>
+          <div>
+            <h4>Vendor Lock-in</h4>
+            <p><strong>Control:</strong> Model and framework abstractions, TIM independent of LLM provider and target</p>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon" style="background:var(--s0);color:#fff;">△</div>
+          <div>
+            <h4>Low-Value Tests Migrated at Scale</h4>
+            <p><strong>Control:</strong> Rationalization engine before mass migration</p>
+          </div>
+        </div>
+        <div class="risk-item" style="border-bottom:none;">
+          <div class="risk-icon" style="background:var(--s0);color:#fff;">△</div>
+          <div>
+            <h4>Autonomous AI Causing Regression</h4>
+            <p><strong>Control:</strong> Approval gates and controlled repository workflows</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function switchTab(tabId) {
+  document.querySelectorAll('.vtab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+  document.getElementById(`panel-${tabId}`).classList.add('active');
+}
+
+function switchHtab(btn, panelId) {
+  const container = btn.closest('.tab-panel');
+  container.querySelectorAll('.htab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.htab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`htab-${panelId}`).classList.add('active');
+}
+</script>
+
+</body>
+</html>

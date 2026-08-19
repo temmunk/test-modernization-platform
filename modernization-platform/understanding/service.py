@@ -18,7 +18,7 @@ import anthropic
 from tim.models import TimSuite, export_json_schema
 from tim.validators import ir_ids, validate_suite
 
-PROMPT_VERSION = "intent_recovery_v1"
+PROMPT_VERSION = "intent_recovery_v2"
 DEFAULT_MODEL = os.environ.get("TIM_LLM_MODEL", "claude-sonnet-5")
 MAX_TOKENS = 32000
 
@@ -64,14 +64,23 @@ def _extract_json(text: str) -> dict:
     return json.loads(text[start:])
 
 
-def recover_intent(ir: dict, api_key: str | None = None, model: str = DEFAULT_MODEL) -> tuple[TimSuite, list[str]]:
-    """Run intent recovery. Returns (validated TimSuite, warnings). Raises on unrecoverable failure."""
+def recover_intent(ir: dict, api_key: str | None = None, model: str = DEFAULT_MODEL,
+                   expected_test_ids: list[str] | None = None) -> tuple[TimSuite, list[str]]:
+    """Run intent recovery over one IR (a batch or a whole estate).
+
+    expected_test_ids: the exact id sequence this batch must use (reserved per
+    batch by the manifest so regenerating one batch never renumbers another).
+    Returns (validated TimSuite, warnings). Raises on unrecoverable failure."""
     client = anthropic.Anthropic(api_key=api_key or os.environ["ANTHROPIC_API_KEY"])
     system, user_tpl = _load_prompt()
+
+    if expected_test_ids is None:
+        expected_test_ids = [f"TIM-{i:03d}" for i in range(1, len(ir.get("tests", [])) + 1)]
 
     schema = export_json_schema()
     user = (
         user_tpl.replace("{IR_JSON}", json.dumps(_slim_ir(ir), indent=1))
+        .replace("{TEST_IDS}", json.dumps(expected_test_ids))
         .replace("{BINDING_IDS}", json.dumps(sorted(ir_ids(ir)), indent=1))
         .replace("{DATA_REFS}", json.dumps(_data_ref_examples(ir), indent=1))
         .replace("{TIM_SCHEMA}", json.dumps(schema))
@@ -111,6 +120,12 @@ def recover_intent(ir: dict, api_key: str | None = None, model: str = DEFAULT_MO
             t["provenance"] = stamp
 
         suite, errors, warnings = validate_suite(data, ir)
+        if suite is not None:
+            got_ids = [t.test_id for t in suite.tests]
+            if got_ids != expected_test_ids:
+                errors.append(
+                    f"test_id sequence mismatch: expected {expected_test_ids}, got {got_ids}"
+                )
         if suite is not None and not errors:
             return suite, warnings
 

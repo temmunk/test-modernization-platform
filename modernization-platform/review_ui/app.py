@@ -26,7 +26,9 @@ from tim.validators import resolve_data_ref  # noqa: E402
 WORKSPACE = PLATFORM.parent
 ART = PLATFORM / "artifacts"
 TIM_FILE = ART / "tim" / "tim-suite.json"
-IR_FILE = ART / "ir" / "normalized_ir.json"
+SHARED_CORE = ART / "ir" / "shared-core.json"
+MANIFEST = ART / "ir" / "manifest.json"
+IR_BATCH_DIR = ART / "ir" / "batches"
 GEN_FILE = ART / "reports" / "generation-report.json"
 EQ_FILE = ART / "reports" / "equivalence-report.json"
 SEL_RUN = ART / "runs" / "selenium-run.json"
@@ -68,6 +70,22 @@ def save_tim(tim: dict) -> None:
     TIM_FILE.write_text(json.dumps(tim, indent=2), encoding="utf-8")
 
 
+def load_ir():
+    """Assemble the classic full IR from the batched artifacts (shared core +
+    every batch's tests)."""
+    shared = load(SHARED_CORE)
+    manifest = load(MANIFEST)
+    if not shared or not manifest:
+        return None
+    ir = dict(shared)
+    ir["tests"] = []
+    for b in manifest["batches"]:
+        batch = load(IR_BATCH_DIR / f"{b['id']}.json")
+        if batch:
+            ir["tests"].extend(batch["tests"])
+    return ir
+
+
 def spec_slice(spec_text: str, test_id: str) -> str:
     """The generated spec block for one TIM test."""
     starts = [m.start() for m in re.finditer(r"^  test\(", spec_text, re.MULTILINE)]
@@ -98,7 +116,7 @@ st.markdown(
 )
 
 tim = load(TIM_FILE)
-ir = load(IR_FILE)
+ir = load_ir()
 gen = load(GEN_FILE)
 eq = load(EQ_FILE)
 sel_run = load(SEL_RUN)
@@ -115,7 +133,7 @@ cov_by_id = {c["test_id"]: c for c in (gen or {}).get("tim_coverage", [])}
 with st.sidebar:
     st.subheader("Pipeline artifacts")
     for label, path, data in (
-        ("Normalized IR", IR_FILE, ir),
+        ("Normalized IR (batched)", MANIFEST, ir),
         ("Test Intent Model", TIM_FILE, tim),
         ("Generation report", GEN_FILE, gen),
         ("Legacy run evidence", SEL_RUN, sel_run),

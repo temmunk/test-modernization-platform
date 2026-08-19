@@ -1,6 +1,6 @@
 {
   "tim_version": "1.0",
-  "suite_name": "MyPrime Guest Flow Suite",
+  "suite_name": "MyPrime Guest Drug Coverage Lookup",
   "business_domain": "Pharmacy benefits \u2014 medicine coverage and formulary lookup",
   "application_under_test": "MyPrime.com guest (unauthenticated) Find Medicines flow",
   "tests": [

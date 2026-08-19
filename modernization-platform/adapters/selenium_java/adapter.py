@@ -395,3 +395,71 @@ class SeleniumJavaAdapter:
                 {"class_name": s["class_name"], "file": s["file"], "doc": s["doc"]} for s in support
             ],
         }
+
+    # ---------- batched normalization ----------
+    def normalize_batched(self) -> tuple[dict, list[dict]]:
+        """Split the estate into a shared core (pages, helpers, config, data)
+        plus one batch per test class carrying only that class's tests and the
+        ids of the shared assets it actually depends on (transitive closure
+        over helper calls and page-to-page transitions)."""
+        ir = self.normalize()
+        shared_core = {k: ir[k] for k in (
+            "ir_version", "source_framework", "config", "test_data",
+            "page_objects", "helpers", "support_classes",
+        )}
+
+        pages = {p["class_name"]: p for p in ir["page_objects"]}
+        helpers = {h["name"]: h for h in ir["helpers"]}
+
+        def pages_mentioned(text: str) -> set:
+            return {name for name in pages if re.search(r"\b" + re.escape(name) + r"\b", text)}
+
+        # page -> pages reachable in one hop (transition returns / new Page(...))
+        page_edges = {}
+        for name, p in pages.items():
+            out = set()
+            for m in p["methods"]:
+                if m["returns"] in pages and m["returns"] != name:
+                    out.add(m["returns"])
+                for a in m["actions"]:
+                    if a["kind"] == "page_transition" and a["to"] in pages and a["to"] != name:
+                        out.add(a["to"])
+            page_edges[name] = out
+
+        def page_closure(seed: set) -> set:
+            todo, seen = list(seed), set(seed)
+            while todo:
+                for nxt in page_edges.get(todo.pop(), ()):
+                    if nxt not in seen:
+                        seen.add(nxt)
+                        todo.append(nxt)
+            return seen
+
+        by_class: dict[str, list] = {}
+        for t in ir["tests"]:
+            by_class.setdefault(t["class_name"], []).append(t)
+
+        batches = []
+        for test_class in sorted(by_class):
+            tests = by_class[test_class]
+            bodies = "\n".join(t["body"] for t in tests)
+            helper_names = {h for h in helpers if re.search(r"\b" + re.escape(h) + r"\s*\(", bodies)}
+            direct_pages = pages_mentioned(bodies)
+            for h in helper_names:
+                direct_pages |= pages_mentioned(helpers[h]["body"])
+            closure = page_closure(direct_pages)
+            batches.append({
+                "id": class_to_batch_id(test_class),
+                "test_class": test_class,
+                "class_doc": tests[0].get("class_doc", ""),
+                "tests": tests,
+                "dependencies": {
+                    "page_objects": sorted(f"page:{p}" for p in closure),
+                    "helpers": sorted(helpers[h]["id"] for h in helper_names),
+                },
+            })
+        return shared_core, batches
+
+
+def class_to_batch_id(test_class: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "-", test_class).lower()

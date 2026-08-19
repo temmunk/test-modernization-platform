@@ -19,14 +19,19 @@ def _run(cmd: list[str], cwd: Path, timeout: int = 3600) -> tuple[int, str]:
     return proc.returncode, (proc.stdout or "") + "\n" + (proc.stderr or "")
 
 
-def run_selenium(root: Path) -> dict:
+def run_selenium(root: Path, test_class: str | None = None) -> dict:
+    """test_class limits the run to one batch's class (surefire -Dtest filter)."""
     root = Path(root)
     reports = root / "target" / "surefire-reports"
     if reports.exists():
         shutil.rmtree(reports, ignore_errors=True)
 
+    cmd = ["mvn", "-B", "test"]
+    if test_class:
+        cmd.append(f"-Dtest={test_class}")
+
     started = datetime.now(timezone.utc)
-    code, output = _run(["mvn", "-B", "test"], cwd=root)
+    code, output = _run(cmd, cwd=root)
     finished = datetime.now(timezone.utc)
 
     tests = []
@@ -65,7 +70,7 @@ def run_selenium(root: Path) -> dict:
 
     return {
         "framework": "selenium-java-testng",
-        "command": "mvn -B test",
+        "command": " ".join(cmd),
         "started_at": started.isoformat(),
         "finished_at": finished.isoformat(),
         "exit_code": code,
@@ -74,13 +79,17 @@ def run_selenium(root: Path) -> dict:
     }
 
 
-def run_playwright(root: Path, headed: bool = True, project: str = "chromium") -> dict:
+def run_playwright(root: Path, headed: bool = True, project: str = "chromium",
+                   spec: str | None = None) -> dict:
+    """spec limits the run to one batch's generated spec file (path or filename)."""
     root = Path(root)
     results_file = root / "test-results" / "results.json"
     if results_file.exists():
         results_file.unlink()
 
     cmd = ["npx", "playwright", "test", f"--project={project}"]
+    if spec:
+        cmd.append(spec)
     if headed:
         cmd.append("--headed")
 

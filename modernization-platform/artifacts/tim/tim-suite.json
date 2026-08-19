@@ -1,28 +1,28 @@
 {
   "tim_version": "1.0",
-  "suite_name": "MyPrime Guest Flow Suite",
+  "suite_name": "DrugCoverageTests",
   "business_domain": "Pharmacy benefits \u2014 medicine coverage and formulary lookup",
-  "application_under_test": "MyPrime.com guest (unauthenticated) Find Medicines flow",
+  "application_under_test": "MyPrime.com guest (non-signed-in) Find Medicines flow",
   "tests": [
     {
       "tim_version": "1.0",
-      "test_id": "TIM-101",
-      "name": "Generic drug (atorvastatin calcium) is shown as covered, on the drug list, with correct tier and dosage",
+      "test_id": "TIM-001",
+      "name": "Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
       "business_capability": "Drug Coverage Lookup",
-      "description": "As a guest visitor to MyPrime who has selected the BCBS Alabama health plan and the SourceRx 1.0 Drug Guide, searching for the generic drug atorvastatin calcium should return a result card and details page that both correctly show its dosage, its 'On drug list' status, and its 'Tier 1/Preferred Generic' tier \u2014 matching data manually verified against the live site.",
+      "description": "Verifies that a guest member searching for the generic drug atorvastatin calcium under the BCBS Alabama plan and SourceRx 1.0 Drug Guide sees correct dosage/quantity information and is told the drug is on the plan's drug list at Tier 1/Preferred Generic, both on the search results card and on the detailed medicine page.",
       "risk": "high",
       "channel": "ui",
       "preconditions": [
         {
           "intent": "guest_plan_and_drug_list_selected",
-          "description": "The visitor has entered MyPrime without signing in, selected the BCBS Alabama health plan (answering the Medicare Part D prompt as configured), and applied the SourceRx 1.0 Drug Guide on the Find medicines page.",
+          "description": "The user has entered the site as a guest, selected the BCBS Alabama health plan, and applied the SourceRx 1.0 Drug Guide drug list on the Find Medicines page.",
           "confidence": 0.9,
           "evidence": [
             {
               "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
               "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
               "line": 38,
-              "quote": "Every test starts from here."
+              "quote": "Drives the non-signed-in entry flow: home -> ... -> pick the configured health plan -> land on Find medicines with the configured drug list applied."
             }
           ]
         }
@@ -30,8 +30,8 @@
       "steps": [
         {
           "step_id": "S1",
-          "intent": "enter_as_guest_with_plan_and_drug_list",
-          "description": "Enter the MyPrime site as a guest (without signing in), select the configured health plan, and apply the configured drug list so the Find medicines page is ready for a search.",
+          "intent": "enter_as_guest_and_configure_plan",
+          "description": "Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page.",
           "channel": "ui",
           "binding_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
           "input_refs": [
@@ -45,14 +45,14 @@
               "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
               "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
               "line": 38,
-              "quote": "Drives the non-signed-in entry flow: home -> \"explore MyPrime without signing in\" -> pick the configured health plan -> land on Find medicines with the configured drug list applied."
+              "quote": "Every test starts from here."
             }
           ]
         },
         {
           "step_id": "S2",
           "intent": "search_and_add_medicine",
-          "description": "Search for atorvastatin, pick the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it and generate a result card.",
+          "description": "Search for 'atorvastatin', select the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it to the results.",
           "channel": "ui",
           "binding_ref": "method:MedicineSearchPage.addMedicine",
           "input_refs": [
@@ -74,8 +74,8 @@
         },
         {
           "step_id": "S3",
-          "intent": "open_medicine_details",
-          "description": "Open the full details page for the added drug to review its dosage and drug-list coverage information in more depth.",
+          "intent": "open_medicine_detail_view",
+          "description": "Open the detailed medicine page for atorvastatin calcium to review its dosage and drug-list status in more depth.",
           "channel": "ui",
           "binding_ref": "method:MedicineSearchPage.openMedicineDetails",
           "input_refs": [
@@ -96,11 +96,11 @@
         {
           "assertion_id": "A1",
           "intent": "verify_result_card_dose_info",
-          "description": "The dosage/quantity/frequency shown on the search result card for atorvastatin calcium matches the expected dosing.",
+          "description": "The dosage and quantity summary on the search-result card for atorvastatin calcium matches the expected 20mg tablet / 30 tablets over 30 days regimen.",
           "actual_binding_ref": "method:MedicineSearchPage.getCardDoseInfo",
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.expectedDoseInfo",
           "expected_literal": null,
-          "failure_meaning": "A member could see the wrong dosage or quantity for this generic drug on the search results, causing confusion about how the medication is dispensed.",
+          "failure_meaning": "A member could see incorrect dosage or quantity information for this generic drug, leading to confusion about how much medication they will receive.",
           "confidence": 0.9,
           "evidence": [
             {
@@ -114,11 +114,11 @@
         {
           "assertion_id": "A2",
           "intent": "verify_result_card_formulary_status",
-          "description": "The formulary/drug-list status text shown on the search result card ('On drug list, Tier 1/Preferred Generic') matches the expected value.",
+          "description": "The result card correctly labels atorvastatin calcium as On drug list, Tier 1/Preferred Generic.",
           "actual_binding_ref": "method:MedicineSearchPage.getCardFormularyText",
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.cardFormularyText",
           "expected_literal": null,
-          "failure_meaning": "A member would be shown the wrong coverage/tier status for this generic on the search results, potentially misleading them about its cost.",
+          "failure_meaning": "A member would be shown the wrong drug-list/tier status for this generic, potentially causing them to believe it is not covered or costs more than it does.",
           "confidence": 0.9,
           "evidence": [
             {
@@ -131,12 +131,12 @@
         },
         {
           "assertion_id": "A3",
-          "intent": "verify_details_drug_name",
-          "description": "The drug name shown on the medicine details page matches the searched-for drug (atorvastatin calcium).",
+          "intent": "verify_details_page_drug_name",
+          "description": "The medicine details page identifies the drug as atorvastatin calcium, confirming the correct medicine was opened.",
           "actual_binding_ref": "method:MedicineDetailsPage.getDrugName",
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.expectedName",
           "expected_literal": null,
-          "failure_meaning": "The details page could display the wrong drug name, undermining confidence in the lookup result.",
+          "failure_meaning": "A member could land on details for the wrong drug, undermining confidence in search accuracy.",
           "confidence": 0.8,
           "evidence": [
             {
@@ -149,13 +149,13 @@
         },
         {
           "assertion_id": "A4",
-          "intent": "verify_details_dose_info",
-          "description": "The dosage/quantity/frequency shown on the medicine details page matches the expected dosing.",
+          "intent": "verify_details_page_dose_info",
+          "description": "The medicine details page shows the same expected dosage/quantity information as the result card for atorvastatin calcium.",
           "actual_binding_ref": "method:MedicineDetailsPage.getDoseInfo",
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.expectedDoseInfo",
           "expected_literal": null,
-          "failure_meaning": "The details page could show incorrect dosage information, leading a member to misunderstand how much medication they will receive.",
-          "confidence": 0.8,
+          "failure_meaning": "A member reviewing the detail page could be misled about the correct dosage or quantity for this drug.",
+          "confidence": 0.85,
           "evidence": [
             {
               "ir_ref": "test:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage",
@@ -167,13 +167,13 @@
         },
         {
           "assertion_id": "A5",
-          "intent": "verify_details_formulary_heading",
-          "description": "The details page's formulary heading confirms this generic drug is marked 'On drug list'.",
+          "intent": "verify_details_page_formulary_heading",
+          "description": "The details page's formulary heading confirms this generic drug is 'On drug list'.",
           "actual_binding_ref": "method:MedicineDetailsPage.getFormularyStatusHeading",
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.detailFormularyHeading",
           "expected_literal": null,
-          "failure_meaning": "A member would be incorrectly told a covered generic drug is not on their drug list, potentially leading them to avoid a lower-cost, covered option.",
-          "confidence": 0.92,
+          "failure_meaning": "A member could be incorrectly told this covered generic drug is not on their drug list, causing them to avoid a lower-cost option or seek an unnecessary formulary exception.",
+          "confidence": 0.95,
           "evidence": [
             {
               "ir_ref": "test:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage",
@@ -185,12 +185,12 @@
         },
         {
           "assertion_id": "A6",
-          "intent": "verify_details_tier_heading",
-          "description": "The details page's tier heading confirms this generic is classified as 'Tier 1/Preferred Generic'.",
+          "intent": "verify_details_page_tier_heading",
+          "description": "The details page's tier heading confirms atorvastatin calcium is classified as Tier 1/Preferred Generic.",
           "actual_binding_ref": "method:MedicineDetailsPage.getTierHeading",
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.detailTierHeading",
           "expected_literal": null,
-          "failure_meaning": "A member would be shown the wrong out-of-pocket tier for this drug, potentially affecting their cost expectations.",
+          "failure_meaning": "A member could be shown the wrong cost tier for this generic, leading to incorrect expectations about their out-of-pocket cost.",
           "confidence": 0.85,
           "evidence": [
             {
@@ -203,12 +203,12 @@
         },
         {
           "assertion_id": "A7",
-          "intent": "test_data_sanity_check",
-          "description": "Confirms the reference (oracle) data itself correctly flags atorvastatin calcium as being on the plan's drug list, guarding against a corrupted test fixture rather than a product defect.",
+          "intent": "verify_test_data_sanity_on_drug_list_flag",
+          "description": "Sanity-checks that the oracle test data itself flags atorvastatin calcium as being on the drug list, guarding against a stale or corrupted expected-data file skewing the test's meaning.",
           "actual_binding_ref": null,
           "expected_ref": "data:drugs.ATORVASTATIN_GENERIC.onDrugList",
           "expected_literal": null,
-          "failure_meaning": "If this fails, the test's own reference data is inconsistent, indicating a test-fixture defect rather than an application defect.",
+          "failure_meaning": "If this sanity check fails, the oracle data itself is inconsistent, meaning the other assertions in this test cannot be trusted regardless of what the site displays.",
           "confidence": 0.6,
           "evidence": [
             {
@@ -223,17 +223,17 @@
       "test_data": [
         {
           "ref": "data:drugs.ATORVASTATIN_GENERIC",
-          "description": "Oracle data for atorvastatin calcium (generic equivalent of Lipitor) captured directly from myprime.com for the BCBS Alabama plan and SourceRx 1.0 Drug Guide.",
+          "description": "Oracle data captured from the live site describing the expected search, dosage, and formulary/tier outcome for the generic drug atorvastatin calcium under the BCBS Alabama / SourceRx 1.0 Drug Guide plan.",
           "oracle": true
         },
         {
           "ref": "config:healthPlan",
-          "description": "The health plan the guest visitor selects before searching.",
+          "description": "The health plan (BCBS Alabama) selected during the guest entry flow.",
           "oracle": false
         },
         {
           "ref": "config:drugList",
-          "description": "The drug list applied on the Find medicines page.",
+          "description": "The drug list/formulary (SourceRx 1.0 Drug Guide) applied on the Find Medicines page.",
           "oracle": false
         }
       ],
@@ -248,37 +248,40 @@
         "test_class": "DrugCoverageTests",
         "test_method": "genericDrug_isOnDrugList_withCorrectTierAndDosage",
         "files": [
-          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java"
+          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+          "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "src/test/resources/testdata/expected-drugs.json"
         ]
       },
       "overall_confidence": 0.87,
       "provenance": {
         "model_version": "claude-sonnet-5",
-        "prompt_version": "intent_recovery_v2",
-        "extracted_at": "2026-08-19T18:00:54.941345+00:00",
+        "prompt_version": "intent_recovery_v1",
+        "extracted_at": "2026-08-18T18:28:58.263289+00:00",
         "review_status": "pending",
         "reviewer_notes": null
       }
     },
     {
       "tim_version": "1.0",
-      "test_id": "TIM-102",
-      "name": "Brand drug (LIPITOR) is shown as not covered / non-formulary in favor of its generic",
+      "test_id": "TIM-002",
+      "name": "Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
       "business_capability": "Drug Coverage Lookup",
-      "description": "As a guest visitor to MyPrime who has selected the BCBS Alabama health plan and the SourceRx 1.0 Drug Guide, searching for the brand drug LIPITOR should return a result card and details page that both correctly show its dosage and its 'Not on drug list' / 'Non-formulary' status, since its generic equivalent (atorvastatin calcium) is the preferred option \u2014 matching data manually verified against the live site.",
+      "description": "Verifies that a guest member searching for the brand drug LIPITOR under the BCBS Alabama plan and SourceRx 1.0 Drug Guide sees correct dosage/quantity information and is told the drug is not on the plan's drug list and is non-formulary, since its generic equivalent (atorvastatin calcium) is the preferred option, both on the search results card and the detailed medicine page.",
       "risk": "high",
       "channel": "ui",
       "preconditions": [
         {
           "intent": "guest_plan_and_drug_list_selected",
-          "description": "The visitor has entered MyPrime without signing in, selected the BCBS Alabama health plan (answering the Medicare Part D prompt as configured), and applied the SourceRx 1.0 Drug Guide on the Find medicines page.",
+          "description": "The user has entered the site as a guest, selected the BCBS Alabama health plan, and applied the SourceRx 1.0 Drug Guide drug list on the Find Medicines page.",
           "confidence": 0.9,
           "evidence": [
             {
               "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
               "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
               "line": 38,
-              "quote": "Every test starts from here."
+              "quote": "Drives the non-signed-in entry flow: home -> ... -> pick the configured health plan -> land on Find medicines with the configured drug list applied."
             }
           ]
         }
@@ -286,8 +289,8 @@
       "steps": [
         {
           "step_id": "S1",
-          "intent": "enter_as_guest_with_plan_and_drug_list",
-          "description": "Enter the MyPrime site as a guest (without signing in), select the configured health plan, and apply the configured drug list so the Find medicines page is ready for a search.",
+          "intent": "enter_as_guest_and_configure_plan",
+          "description": "Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page.",
           "channel": "ui",
           "binding_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
           "input_refs": [
@@ -301,14 +304,14 @@
               "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
               "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
               "line": 38,
-              "quote": "Drives the non-signed-in entry flow: home -> \"explore MyPrime without signing in\" -> pick the configured health plan -> land on Find medicines with the configured drug list applied."
+              "quote": "Every test starts from here."
             }
           ]
         },
         {
           "step_id": "S2",
           "intent": "search_and_add_medicine",
-          "description": "Search for Lipitor, pick the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it and generate a result card.",
+          "description": "Search for 'Lipitor', select the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it to the results.",
           "channel": "ui",
           "binding_ref": "method:MedicineSearchPage.addMedicine",
           "input_refs": [
@@ -330,8 +333,8 @@
         },
         {
           "step_id": "S3",
-          "intent": "open_medicine_details",
-          "description": "Open the full details page for the added drug to review its dosage and drug-list coverage information in more depth.",
+          "intent": "open_medicine_detail_view",
+          "description": "Open the detailed medicine page for LIPITOR to review its dosage and drug-list status in more depth.",
           "channel": "ui",
           "binding_ref": "method:MedicineSearchPage.openMedicineDetails",
           "input_refs": [
@@ -352,11 +355,11 @@
         {
           "assertion_id": "A1",
           "intent": "verify_result_card_dose_info",
-          "description": "The dosage/quantity/frequency shown on the search result card for LIPITOR matches the expected dosing.",
+          "description": "The dosage and quantity summary on the search-result card for LIPITOR matches the expected 10mg tablet / 30 tablets over 30 days regimen.",
           "actual_binding_ref": "method:MedicineSearchPage.getCardDoseInfo",
           "expected_ref": "data:drugs.LIPITOR_BRAND.expectedDoseInfo",
           "expected_literal": null,
-          "failure_meaning": "A member could see the wrong dosage or quantity for this brand drug on the search results, causing confusion about how the medication is dispensed.",
+          "failure_meaning": "A member could see incorrect dosage or quantity information for this brand drug, leading to confusion about how it should be taken.",
           "confidence": 0.9,
           "evidence": [
             {
@@ -370,11 +373,11 @@
         {
           "assertion_id": "A2",
           "intent": "verify_result_card_formulary_status",
-          "description": "The formulary/drug-list status text shown on the search result card ('Not on drug list, Non-formulary') matches the expected value.",
+          "description": "The result card correctly labels LIPITOR as Not on drug list, Non-formulary.",
           "actual_binding_ref": "method:MedicineSearchPage.getCardFormularyText",
           "expected_ref": "data:drugs.LIPITOR_BRAND.cardFormularyText",
           "expected_literal": null,
-          "failure_meaning": "A member would be shown the wrong coverage status for this brand drug on the search results, potentially leading them to believe an expensive brand is covered when it is not.",
+          "failure_meaning": "A member would be shown the wrong drug-list/formulary status for this brand drug, potentially causing them to believe it is covered when it is not, resulting in unexpected out-of-pocket cost.",
           "confidence": 0.9,
           "evidence": [
             {
@@ -387,12 +390,12 @@
         },
         {
           "assertion_id": "A3",
-          "intent": "verify_details_drug_name",
-          "description": "The drug name shown on the medicine details page matches the searched-for drug (LIPITOR).",
+          "intent": "verify_details_page_drug_name",
+          "description": "The medicine details page identifies the drug as LIPITOR, confirming the correct medicine was opened.",
           "actual_binding_ref": "method:MedicineDetailsPage.getDrugName",
           "expected_ref": "data:drugs.LIPITOR_BRAND.expectedName",
           "expected_literal": null,
-          "failure_meaning": "The details page could display the wrong drug name, undermining confidence in the lookup result.",
+          "failure_meaning": "A member could land on details for the wrong drug, undermining confidence in search accuracy.",
           "confidence": 0.8,
           "evidence": [
             {
@@ -405,13 +408,13 @@
         },
         {
           "assertion_id": "A4",
-          "intent": "verify_details_dose_info",
-          "description": "The dosage/quantity/frequency shown on the medicine details page matches the expected dosing.",
+          "intent": "verify_details_page_dose_info",
+          "description": "The medicine details page shows the same expected dosage/quantity information as the result card for LIPITOR.",
           "actual_binding_ref": "method:MedicineDetailsPage.getDoseInfo",
           "expected_ref": "data:drugs.LIPITOR_BRAND.expectedDoseInfo",
           "expected_literal": null,
-          "failure_meaning": "The details page could show incorrect dosage information, leading a member to misunderstand how the drug is dispensed.",
-          "confidence": 0.8,
+          "failure_meaning": "A member reviewing the detail page could be misled about the correct dosage or quantity for this drug.",
+          "confidence": 0.85,
           "evidence": [
             {
               "ir_ref": "test:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary",
@@ -423,13 +426,13 @@
         },
         {
           "assertion_id": "A5",
-          "intent": "verify_details_formulary_heading",
-          "description": "The details page's formulary heading confirms this brand drug is marked 'Not on drug list'.",
+          "intent": "verify_details_page_formulary_heading",
+          "description": "The details page's formulary heading confirms this brand drug is 'Not on drug list'.",
           "actual_binding_ref": "method:MedicineDetailsPage.getFormularyStatusHeading",
           "expected_ref": "data:drugs.LIPITOR_BRAND.detailFormularyHeading",
           "expected_literal": null,
-          "failure_meaning": "A member would be incorrectly told an expensive, non-preferred brand drug is on their drug list, potentially leading to unexpected out-of-pocket costs.",
-          "confidence": 0.92,
+          "failure_meaning": "A member could be incorrectly told this non-preferred brand drug is on their drug list, leading them to expect standard formulary coverage they don't actually have.",
+          "confidence": 0.95,
           "evidence": [
             {
               "ir_ref": "test:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary",
@@ -441,12 +444,12 @@
         },
         {
           "assertion_id": "A6",
-          "intent": "verify_details_tier_heading",
-          "description": "The details page's tier heading confirms this brand drug is classified as 'Non-formulary'.",
+          "intent": "verify_details_page_tier_heading",
+          "description": "The details page's tier heading confirms LIPITOR is classified as Non-formulary.",
           "actual_binding_ref": "method:MedicineDetailsPage.getTierHeading",
           "expected_ref": "data:drugs.LIPITOR_BRAND.detailTierHeading",
           "expected_literal": null,
-          "failure_meaning": "A member would be shown the wrong out-of-pocket tier for this brand drug, potentially affecting their cost expectations.",
+          "failure_meaning": "A member could be shown the wrong cost tier for this brand drug, leading to incorrect expectations about their out-of-pocket cost.",
           "confidence": 0.85,
           "evidence": [
             {
@@ -459,12 +462,12 @@
         },
         {
           "assertion_id": "A7",
-          "intent": "test_data_sanity_check",
-          "description": "Confirms the reference (oracle) data itself correctly flags LIPITOR as not being on the plan's drug list, guarding against a corrupted test fixture rather than a product defect.",
+          "intent": "verify_test_data_sanity_off_drug_list_flag",
+          "description": "Sanity-checks that the oracle test data itself flags LIPITOR as not being on the drug list, guarding against a stale or corrupted expected-data file skewing the test's meaning.",
           "actual_binding_ref": null,
           "expected_ref": "data:drugs.LIPITOR_BRAND.onDrugList",
           "expected_literal": null,
-          "failure_meaning": "If this fails, the test's own reference data is inconsistent, indicating a test-fixture defect rather than an application defect.",
+          "failure_meaning": "If this sanity check fails, the oracle data itself is inconsistent, meaning the other assertions in this test cannot be trusted regardless of what the site displays.",
           "confidence": 0.6,
           "evidence": [
             {
@@ -479,17 +482,17 @@
       "test_data": [
         {
           "ref": "data:drugs.LIPITOR_BRAND",
-          "description": "Oracle data for LIPITOR (brand drug) captured directly from myprime.com for the BCBS Alabama plan and SourceRx 1.0 Drug Guide.",
+          "description": "Oracle data captured from the live site describing the expected search, dosage, and formulary/tier outcome for the brand drug LIPITOR under the BCBS Alabama / SourceRx 1.0 Drug Guide plan.",
           "oracle": true
         },
         {
           "ref": "config:healthPlan",
-          "description": "The health plan the guest visitor selects before searching.",
+          "description": "The health plan (BCBS Alabama) selected during the guest entry flow.",
           "oracle": false
         },
         {
           "ref": "config:drugList",
-          "description": "The drug list applied on the Find medicines page.",
+          "description": "The drug list/formulary (SourceRx 1.0 Drug Guide) applied on the Find Medicines page.",
           "oracle": false
         }
       ],
@@ -504,37 +507,40 @@
         "test_class": "DrugCoverageTests",
         "test_method": "brandDrug_isNotOnDrugList_nonFormulary",
         "files": [
-          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java"
+          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+          "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "src/test/resources/testdata/expected-drugs.json"
         ]
       },
       "overall_confidence": 0.87,
       "provenance": {
         "model_version": "claude-sonnet-5",
-        "prompt_version": "intent_recovery_v2",
-        "extracted_at": "2026-08-19T18:00:54.941345+00:00",
+        "prompt_version": "intent_recovery_v1",
+        "extracted_at": "2026-08-18T18:28:58.263289+00:00",
         "review_status": "pending",
         "reviewer_notes": null
       }
     },
     {
       "tim_version": "1.0",
-      "test_id": "TIM-103",
-      "name": "Selected health plan is displayed on the Find medicines page",
-      "business_capability": "Drug Coverage Lookup",
-      "description": "As a guest visitor to MyPrime who selects a health plan during the pre-login plan-selection flow, the Find medicines page should clearly display that same health plan back to the visitor, confirming they are viewing coverage information for the correct plan.",
+      "test_id": "TIM-003",
+      "name": "Selected health plan is reflected on the Find Medicines page",
+      "business_capability": "Health Plan Selection",
+      "description": "Verifies that the health plan a guest chooses during the pre-login plan-selection modal (BCBS Alabama) is correctly displayed back to them on the Find Medicines page, confirming the plan context used for all subsequent drug-coverage lookups is the one the member actually selected.",
       "risk": "medium",
       "channel": "ui",
       "preconditions": [
         {
           "intent": "guest_plan_selected",
-          "description": "The visitor has entered MyPrime without signing in and selected the configured health plan via the pre-login plan-selection modal.",
+          "description": "The user has entered the site as a guest and selected the BCBS Alabama health plan in the pre-login plan-selection modal.",
           "confidence": 0.9,
           "evidence": [
             {
               "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
               "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
               "line": 38,
-              "quote": "Every test starts from here."
+              "quote": "home -> \"explore MyPrime without signing in\" -> pick the configured health plan -> land on Find medicines"
             }
           ]
         }
@@ -542,8 +548,8 @@
       "steps": [
         {
           "step_id": "S1",
-          "intent": "enter_as_guest_with_plan_and_drug_list",
-          "description": "Enter the MyPrime site as a guest (without signing in), select the configured health plan, and apply the configured drug list, landing on the Find medicines page.",
+          "intent": "enter_as_guest_and_configure_plan",
+          "description": "Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page.",
           "channel": "ui",
           "binding_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
           "input_refs": [
@@ -557,7 +563,7 @@
               "ir_ref": "helper:BaseTest.goToFindMedicinesAsGuest",
               "file": "src/test/java/com/myprime/automation/tests/BaseTest.java",
               "line": 38,
-              "quote": "Drives the non-signed-in entry flow: home -> \"explore MyPrime without signing in\" -> pick the configured health plan -> land on Find medicines with the configured drug list applied."
+              "quote": "Every test starts from here."
             }
           ]
         }
@@ -566,11 +572,11 @@
         {
           "assertion_id": "A1",
           "intent": "verify_selected_health_plan_displayed",
-          "description": "The health plan banner on the Find medicines page shows the same health plan the visitor selected in the pre-login modal.",
+          "description": "The 'Your health plan' banner on the Find Medicines page shows the same health plan (BCBS Alabama) that was chosen during the guest plan-selection flow.",
           "actual_binding_ref": "method:MedicineSearchPage.getSelectedHealthPlan",
           "expected_ref": "config:healthPlan",
           "expected_literal": null,
-          "failure_meaning": "A member could be shown drug coverage information for the wrong health plan without realizing it, leading to incorrect cost or coverage expectations.",
+          "failure_meaning": "A member could see the wrong health plan reflected on the Find Medicines page, causing them to view drug coverage and formulary information for a plan that is not theirs.",
           "confidence": 0.95,
           "evidence": [
             {
@@ -585,7 +591,7 @@
       "test_data": [
         {
           "ref": "config:healthPlan",
-          "description": "The health plan the guest visitor selects and expects to see echoed back on the Find medicines page.",
+          "description": "The health plan (BCBS Alabama) expected to be displayed back to the member after selection.",
           "oracle": true
         }
       ],
@@ -600,14 +606,15 @@
         "test_class": "DrugCoverageTests",
         "test_method": "selectedHealthPlan_isDisplayedOnFindMedicinesPage",
         "files": [
-          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java"
+          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+          "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java"
         ]
       },
       "overall_confidence": 0.9,
       "provenance": {
         "model_version": "claude-sonnet-5",
-        "prompt_version": "intent_recovery_v2",
-        "extracted_at": "2026-08-19T18:00:54.941345+00:00",
+        "prompt_version": "intent_recovery_v1",
+        "extracted_at": "2026-08-18T18:28:58.263289+00:00",
         "review_status": "pending",
         "reviewer_notes": null
       }

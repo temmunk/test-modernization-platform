@@ -15,7 +15,7 @@ ul{font-size:0.85rem;}
 .stat b{display:block;font-size:1.6rem;color:#0070C0;}
 </style></head><body>
 <h1>Behavioral Equivalence Report</h1>
-<p class="cap">MyPrime Guest Flow Suite — assessed 2026-08-19T18:03:13.148194+00:00</p>
+<p class="cap">DrugCoverageTests — assessed 2026-08-18T18:40:27.191939+00:00</p>
 <div class="summary">
   <div class="stat"><b>3</b>Equivalent</div>
   <div class="stat"><b>0</b>Partially</div>
@@ -25,7 +25,7 @@ ul{font-size:0.85rem;}
 
     <div class="card">
       <div class="card-head">
-        <h3>TIM-101 · Generic drug (atorvastatin calcium) is shown as covered, on the drug list, with correct tier and dosage</h3>
+        <h3>TIM-001 · Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage</h3>
         <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
       </div>
       <p class="cap">Drug Coverage Lookup — intent confidence 0.87</p>
@@ -35,8 +35,8 @@ ul{font-size:0.85rem;}
             <td>DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage</td>
             <td>tests/drug-coverage.spec.js</td></tr>
         <tr><td>Outcome</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.939s</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 17.82s</td></tr>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.823s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.2s</td></tr>
       </table>
       <p><strong>Flow match:</strong> 3/3 steps
          &nbsp; <strong>Assertion match:</strong> 7/7 assertions</p>
@@ -46,7 +46,7 @@ ul{font-size:0.85rem;}
     </div>
     <div class="card">
       <div class="card-head">
-        <h3>TIM-102 · Brand drug (LIPITOR) is shown as not covered / non-formulary in favor of its generic</h3>
+        <h3>TIM-002 · Brand drug (LIPITOR) is shown as not on the drug list and non-formulary</h3>
         <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
       </div>
       <p class="cap">Drug Coverage Lookup — intent confidence 0.87</p>
@@ -56,8 +56,8 @@ ul{font-size:0.85rem;}
             <td>DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary</td>
             <td>tests/drug-coverage.spec.js</td></tr>
         <tr><td>Outcome</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 20.729s</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 15.27s</td></tr>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 17.699s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.11s</td></tr>
       </table>
       <p><strong>Flow match:</strong> 3/3 steps
          &nbsp; <strong>Assertion match:</strong> 7/7 assertions</p>
@@ -67,18 +67,18 @@ ul{font-size:0.85rem;}
     </div>
     <div class="card">
       <div class="card-head">
-        <h3>TIM-103 · Selected health plan is displayed on the Find medicines page</h3>
+        <h3>TIM-003 · Selected health plan is reflected on the Find Medicines page</h3>
         <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
       </div>
-      <p class="cap">Drug Coverage Lookup — intent confidence 0.9</p>
+      <p class="cap">Health Plan Selection — intent confidence 0.9</p>
       <table>
         <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
         <tr><td>Implementation</td>
             <td>DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage</td>
             <td>tests/drug-coverage.spec.js</td></tr>
         <tr><td>Outcome</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 10.694s</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 9.34s</td></tr>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 11.019s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 9.23s</td></tr>
       </table>
       <p><strong>Flow match:</strong> 1/1 steps
          &nbsp; <strong>Assertion match:</strong> 1/1 assertions</p>

@@ -1,6 +1,6 @@
 {
-  "assessed_at": "2026-08-19T18:03:13.148194+00:00",
-  "suite_name": "MyPrime Guest Flow Suite",
+  "assessed_at": "2026-08-18T18:40:27.191939+00:00",
+  "suite_name": "DrugCoverageTests",
   "summary": {
     "EQUIVALENT": 3,
     "PARTIALLY_EQUIVALENT": 0,
@@ -8,21 +8,21 @@
     "BLOCKED": 0
   },
   "legacy_run": {
-    "command": "mvn -B test -Dtest=DrugCoverageTests",
-    "started_at": "2026-08-19T18:01:18.878571+00:00",
-    "finished_at": "2026-08-19T18:02:11.667486+00:00",
+    "command": "mvn -B test",
+    "started_at": "2026-08-18T18:32:32.114091+00:00",
+    "finished_at": "2026-08-18T18:33:21.879972+00:00",
     "exit_code": 0
   },
   "modern_run": {
-    "command": "npx playwright test --project=chromium tests/drug-coverage.spec.js --headed",
-    "started_at": "2026-08-19T18:02:11.705018+00:00",
-    "finished_at": "2026-08-19T18:02:57.079296+00:00",
+    "command": "npx playwright test --project=chromium --headed",
+    "started_at": "2026-08-18T18:39:25.646337+00:00",
+    "finished_at": "2026-08-18T18:40:09.760396+00:00",
     "exit_code": 0
   },
   "results": [
     {
-      "test_id": "TIM-101",
-      "name": "Generic drug (atorvastatin calcium) is shown as covered, on the drug list, with correct tier and dosage",
+      "test_id": "TIM-001",
+      "name": "Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
       "business_capability": "Drug Coverage Lookup",
       "overall_confidence": 0.87,
       "source": {
@@ -30,12 +30,15 @@
         "test_class": "DrugCoverageTests",
         "test_method": "genericDrug_isOnDrugList_withCorrectTierAndDosage",
         "files": [
-          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java"
+          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+          "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "src/test/resources/testdata/expected-drugs.json"
         ]
       },
       "generated": {
         "spec": "tests/drug-coverage.spec.js",
-        "title": "TIM-101 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as covered, on the drug list, with correct tier and dosage"
+        "title": "TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage"
       },
       "checks": {
         "flow_match": {
@@ -58,22 +61,22 @@
         "test_class": "DrugCoverageTests",
         "test_method": "genericDrug_isOnDrugList_withCorrectTierAndDosage",
         "status": "passed",
-        "duration_s": 16.939,
+        "duration_s": 16.823,
         "failure_message": null
       },
       "modern_execution": {
-        "title": "TIM-101 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as covered, on the drug list, with correct tier and dosage",
-        "tim_id": "TIM-101",
+        "title": "TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
+        "tim_id": "TIM-001",
         "status": "passed",
-        "duration_s": 17.82,
+        "duration_s": 16.2,
         "failure_message": null,
         "annotations": [
           {
             "type": "tim",
-            "description": "TIM-101 \u2014 Drug Coverage Lookup (overall confidence 0.87)",
+            "description": "TIM-001 \u2014 Drug Coverage Lookup (overall confidence 0.87)",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 17,
+              "line": 16,
               "column": 7
             }
           },
@@ -82,7 +85,7 @@
             "description": "selenium:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 17,
+              "line": 16,
               "column": 7
             }
           }
@@ -97,8 +100,8 @@
       "recommendation": "Approve migration"
     },
     {
-      "test_id": "TIM-102",
-      "name": "Brand drug (LIPITOR) is shown as not covered / non-formulary in favor of its generic",
+      "test_id": "TIM-002",
+      "name": "Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
       "business_capability": "Drug Coverage Lookup",
       "overall_confidence": 0.87,
       "source": {
@@ -106,12 +109,15 @@
         "test_class": "DrugCoverageTests",
         "test_method": "brandDrug_isNotOnDrugList_nonFormulary",
         "files": [
-          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java"
+          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+          "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java",
+          "src/main/java/com/myprime/automation/pages/MedicineDetailsPage.java",
+          "src/test/resources/testdata/expected-drugs.json"
         ]
       },
       "generated": {
         "spec": "tests/drug-coverage.spec.js",
-        "title": "TIM-102 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not covered / non-formulary in favor of its generic"
+        "title": "TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary"
       },
       "checks": {
         "flow_match": {
@@ -134,22 +140,22 @@
         "test_class": "DrugCoverageTests",
         "test_method": "brandDrug_isNotOnDrugList_nonFormulary",
         "status": "passed",
-        "duration_s": 20.729,
+        "duration_s": 17.699,
         "failure_message": null
       },
       "modern_execution": {
-        "title": "TIM-102 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not covered / non-formulary in favor of its generic",
-        "tim_id": "TIM-102",
+        "title": "TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
+        "tim_id": "TIM-002",
         "status": "passed",
-        "duration_s": 15.27,
+        "duration_s": 16.11,
         "failure_message": null,
         "annotations": [
           {
             "type": "tim",
-            "description": "TIM-102 \u2014 Drug Coverage Lookup (overall confidence 0.87)",
+            "description": "TIM-002 \u2014 Drug Coverage Lookup (overall confidence 0.87)",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 69,
+              "line": 68,
               "column": 7
             }
           },
@@ -158,7 +164,7 @@
             "description": "selenium:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 69,
+              "line": 68,
               "column": 7
             }
           }
@@ -173,21 +179,22 @@
       "recommendation": "Approve migration"
     },
     {
-      "test_id": "TIM-103",
-      "name": "Selected health plan is displayed on the Find medicines page",
-      "business_capability": "Drug Coverage Lookup",
+      "test_id": "TIM-003",
+      "name": "Selected health plan is reflected on the Find Medicines page",
+      "business_capability": "Health Plan Selection",
       "overall_confidence": 0.9,
       "source": {
         "framework": "selenium-java-testng",
         "test_class": "DrugCoverageTests",
         "test_method": "selectedHealthPlan_isDisplayedOnFindMedicinesPage",
         "files": [
-          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java"
+          "src/test/java/com/myprime/automation/tests/DrugCoverageTests.java",
+          "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java"
         ]
       },
       "generated": {
         "spec": "tests/drug-coverage.spec.js",
-        "title": "TIM-103 \u00c2\u00b7 Selected health plan is displayed on the Find medicines page"
+        "title": "TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page"
       },
       "checks": {
         "flow_match": {
@@ -210,22 +217,22 @@
         "test_class": "DrugCoverageTests",
         "test_method": "selectedHealthPlan_isDisplayedOnFindMedicinesPage",
         "status": "passed",
-        "duration_s": 10.694,
+        "duration_s": 11.019,
         "failure_message": null
       },
       "modern_execution": {
-        "title": "TIM-103 \u00c2\u00b7 Selected health plan is displayed on the Find medicines page",
-        "tim_id": "TIM-103",
+        "title": "TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page",
+        "tim_id": "TIM-003",
         "status": "passed",
-        "duration_s": 9.34,
+        "duration_s": 9.23,
         "failure_message": null,
         "annotations": [
           {
             "type": "tim",
-            "description": "TIM-103 \u2014 Drug Coverage Lookup (overall confidence 0.9)",
+            "description": "TIM-003 \u2014 Health Plan Selection (overall confidence 0.9)",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 119,
+              "line": 118,
               "column": 7
             }
           },
@@ -234,7 +241,7 @@
             "description": "selenium:DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 119,
+              "line": 118,
               "column": 7
             }
           }

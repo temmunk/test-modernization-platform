@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from generators.merge_param import parameterize
+from rationalization.models import index_plan
 from tim.models import TimSuite
 
 BLUEPRINT_ID = "playwright-js-v1"
@@ -181,18 +183,27 @@ def parse_chain(expr: str):
 
 
 class PlaywrightJsGenerator:
-    def __init__(self, ir: dict, suite: TimSuite, target_root: Path):
+    def __init__(self, ir: dict, suite: TimSuite, target_root: Path, plan: Optional[dict] = None):
         self.ir = ir
         self.suite = suite
         self.target = Path(target_root)
+        self.plan = plan
+        # Without a plan the generator emits one implementation per recovered intent.
+        # With one, it emits what the portfolio decision says to emit — and records
+        # everything it did not emit, with the reason. Nothing is dropped silently.
+        self.plan_index = index_plan(plan) if plan else None
         self.pages = {p["class_name"]: p for p in ir["page_objects"]}
         self.report = {
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "blueprint": BLUEPRINT_ID,
             "target_root": self.target.name,
+            "plan_applied": bool(plan),
+            "dispositions": {d["test_id"]: d["disposition"] for d in (plan or {}).get("decisions", [])},
             "files": [],
             "methods": [],
             "tim_coverage": [],
+            "skipped_by_disposition": [],
+            "merges": [],
         }
         # method return types per class
         self.returns: Dict[str, Dict[str, Optional[str]]] = {}
@@ -702,101 +713,233 @@ class PlaywrightJsGenerator:
              "target": "fixtures/guest-flow.js"}
         )
 
+    # ------------------------------------------------------------ specs
+    def _translate_test(self, tim, ir_test: dict, spec_name: str) -> dict:
+        """Translate one TIM test into Playwright body lines + coverage record."""
+        coverage = {"test_id": tim.test_id, "spec": f"tests/{spec_name}",
+                    "title": f"{tim.test_id} · {tim.name}", "steps": [], "assertions": []}
+
+        env: Dict[str, str] = {}
+        body_lines: List[str] = []
+        uses_data, uses_config = False, False
+        assertion_iter = iter(tim.assertions)
+        # steps not bound to the shared fixture, in order, for comments
+        step_iter = iter([s for s in tim.steps
+                          if s.binding_ref and not s.binding_ref.startswith("helper:")])
+
+        fixture_steps = [s for s in tim.steps if s.binding_ref and s.binding_ref.startswith("helper:")]
+        for s in fixture_steps:
+            body_lines.append(f"// [{s.step_id}] {s.description} (via fixture, confidence {s.confidence})")
+            coverage["steps"].append({"step_id": s.step_id, "realized_by": "fixtures/guest-flow.js"})
+        if fixture_steps:
+            body_lines.append("")
+
+        for stmt in split_statements(ir_test["body"]):
+            norm = re.sub(r"\s+", " ", stmt).strip()
+            am = re.match(r"Assert\s*\.\s*(assert\w+)\s*\((.*)\)\s*;?$", norm, re.DOTALL)
+            if am:
+                a = next(assertion_iter, None)
+                if a:
+                    body_lines.append(f"// [{a.assertion_id}] {a.description} (confidence {a.confidence})")
+                    if a.failure_meaning:
+                        body_lines.append(f"//   failure means: {a.failure_meaning}")
+                    coverage["assertions"].append(
+                        {"assertion_id": a.assertion_id, "realized_by": f"tests/{spec_name}"}
+                    )
+                args = split_top_level(am.group(2))
+                kind = am.group(1)
+                if kind in ("assertEquals", "assertNotEquals"):
+                    actual = self.tr_expr(args[0], env)
+                    expected = self.tr_expr(args[1], env)
+                    msg = f", {args[2]}" if len(args) > 2 else ""
+                    matcher = "toBe" if kind == "assertEquals" else "not.toBe"
+                    body_lines.append(f"expect({actual}{msg}).{matcher}({expected});")
+                else:
+                    cond = self.tr_expr(args[0], env)
+                    msg = f", {args[1]}" if len(args) > 1 else ""
+                    expected = "true" if kind == "assertTrue" else "false"
+                    body_lines.append(f"expect({cond}{msg}).toBe({expected});")
+                body_lines.append("")
+                if "expected." in " ".join(body_lines) or "findDrugByKey" in " ".join(body_lines):
+                    uses_data = True
+                if "config." in " ".join(body_lines):
+                    uses_config = True
+                continue
+
+            step = next(step_iter, None)
+            if step and "findDrugByKey" not in norm:
+                body_lines.append(f"// [{step.step_id}] {step.description} (confidence {step.confidence})")
+                coverage["steps"].append({"step_id": step.step_id, "realized_by": f"tests/{spec_name}"})
+            elif step and "findDrugByKey" in norm:
+                # data-loading statements aren't TIM interaction steps; put it back
+                step_iter = _push_back(step, step_iter)
+            before = len(body_lines)
+            if not self.tr_flow_stmt(stmt, env, body_lines, fixture_var="medicineSearchPage"):
+                body_lines.append(f"// TODO(review): untranslated statement: {norm}")
+            if any("findDrugByKey" in ln for ln in body_lines[before:]):
+                uses_data = True
+            if any("config." in ln for ln in body_lines[before:]):
+                uses_config = True
+            body_lines.append("")
+
+        return {"body_lines": body_lines, "coverage": coverage,
+                "uses_data": uses_data, "uses_config": uses_config}
+
+    def _annotations(self, tim) -> List[str]:
+        anns = [
+            f"{{ type: 'tim', description: {js_str(tim.test_id + ' — ' + tim.business_capability + f' (overall confidence {tim.overall_confidence})')} }}",
+            f"{{ type: 'source', description: {js_str('selenium:' + tim.source.test_class + '.' + tim.source.test_method)} }}",
+        ]
+        d = (self.plan_index or {}).get("by_test", {}).get(tim.test_id)
+        if d and d["disposition"] != "MIGRATE":
+            anns.append(f"{{ type: 'disposition', description: {js_str(d['disposition'] + ': ' + d['rationale'])} }}")
+        return anns
+
+    def _single_block(self, tim, tr: dict) -> str:
+        desc_comment = ["  /**"] + [f"   * {ln}" for ln in _wrap(tim.description, 74)]
+        d = (self.plan_index or {}).get("by_test", {}).get(tim.test_id)
+        if d and d["disposition"] == "REDESIGN":
+            desc_comment += ["   *"] + [f"   * REDESIGN ({d.get('target_channel') or 'ui'}): {ln}"
+                                        for ln in _wrap(d.get("redesign_note") or "", 66)]
+        if d and d["disposition"] == "SPLIT":
+            desc_comment += ["   *", "   * SPLIT pending — this body still proves several intents:"]
+            desc_comment += [f"   *   - {t}" for t in d.get("split_targets", [])]
+        desc_comment += ["   */"]
+        return "\n".join(desc_comment) + "\n" + "\n".join([
+            f"  test({js_str(tim.test_id + ' · ' + tim.name)}, {{",
+            f"    annotation: [{', '.join(self._annotations(tim))}],",
+            "  }, async ({ medicineSearchPage, page }) => {",
+        ] + [("    " + ln).rstrip() for ln in tr["body_lines"]] + [
+            "  });",
+        ])
+
+    def _merged_block(self, translated: List, spec_name: str, index: int) -> Optional[str]:
+        """One parameterized body for a merge group, or None if the merge cannot be
+        realized without changing behavior (the members are then emitted separately)."""
+        members = [tim for tim, _ in translated]
+        group_id = (self.plan_index or {}).get("group_of", {}).get(members[0].test_id, f"group-{index}")
+        result = parameterize([tr["body_lines"] for _, tr in translated])
+
+        record = {
+            "group_id": group_id,
+            "primary": members[0].test_id,
+            "members": [t.test_id for t in members],
+            "spec": f"tests/{spec_name}",
+            "realized": result["ok"],
+        }
+        if not result["ok"]:
+            record["reason"] = result["reason"]
+            record["blocking_statement"] = result["blocking"]
+            self.report["merges"].append(record)
+            return None
+        record["parameters"] = sorted(set(result["params"]))
+        self.report["merges"].append(record)
+
+        const = f"MERGED_CASES_{index}" if index else "MERGED_CASES"
+        rows = []
+        for (tim, _), values in zip(translated, result["cases"]):
+            fields = [
+                f"timId: {js_str(tim.test_id)}",
+                f"name: {js_str(tim.name)}",
+                f"capability: {js_str(tim.business_capability)}",
+                f"confidence: {tim.overall_confidence}",
+                f"source: {js_str('selenium:' + tim.source.test_class + '.' + tim.source.test_method)}",
+            ] + [f"{k}: {v}" for k, v in values.items()]
+            rows.append("    { " + ", ".join(fields) + " },")
+
+        header = ["  /**", f"   * Merged by the rationalization plan (group {group_id}):",
+                  f"   *   {', '.join(t.test_id + ' - ' + t.name for t in members)}",
+                  "   *",
+                  "   * One implementation, one case per intent: every merged intent still runs",
+                  "   * its own expected values and still reports under its own TIM id.",
+                  f"   * The inline commentary below is {members[0].test_id}'s; each case replays it",
+                  "   * against its own data row.",
+                  "   *"]
+        header += [f"   * {ln}" for ln in _wrap(members[0].description, 74)] + ["   */"]
+
+        body = [("      " + ln).rstrip() for ln in result["template"]]
+        return "\n".join(header) + "\n" + "\n".join(
+            [f"  const {const} = ["] + rows + ["  ];", "",
+             f"  for (const testCase of {const}) {{",
+             "    test(`${testCase.timId} \\u00b7 ${testCase.name}`, {",
+             "      annotation: ["
+             "{ type: 'tim', description: `${testCase.timId} \\u2014 ${testCase.capability} "
+             "(overall confidence ${testCase.confidence})` }, "
+             "{ type: 'source', description: testCase.source }, "
+             f"{{ type: 'merged', description: {js_str('rationalization group ' + group_id)} }}],",
+             "    }, async ({ medicineSearchPage, page }) => {"]
+            + body
+            + ["    });", "  }"]
+        )
+
+    def _spec_groups(self, tims_by_id: Dict[str, object]) -> List[List]:
+        """Ordered groups of TIM tests that share one generated implementation.
+
+        Without a rationalization plan every test is its own group (the platform's
+        pre-rationalization behavior). With a plan, RETIRE/DEFER tests are recorded
+        as skipped rather than emitted, and merge groups become one group."""
+        if not self.plan_index:
+            return [[t] for t in self.suite.tests]
+
+        for tid, info in self.plan_index["skip"].items():
+            tim = tims_by_id.get(tid)
+            self.report["skipped_by_disposition"].append({
+                "test_id": tid,
+                "name": getattr(tim, "name", None),
+                "disposition": info["disposition"],
+                "reason": info["reason"],
+                "source": (f"{tim.source.test_class}.{tim.source.test_method}" if tim else None),
+            })
+
+        groups: List[List] = []
+        for member_ids in self.plan_index["emit"]:
+            members = [tims_by_id[m] for m in member_ids if m in tims_by_id]
+            if members:
+                groups.append(members)
+        return groups
+
     def emit_specs(self) -> None:
-        by_class: Dict[str, List] = {}
-        for tim in self.suite.tests:
-            by_class.setdefault(tim.source.test_class, []).append(tim)
-
         ir_tests = {t["id"]: t for t in self.ir["tests"]}
+        tims_by_id = {t.test_id: t for t in self.suite.tests}
+        groups = self._spec_groups(tims_by_id)
 
-        for test_class, tims in by_class.items():
+        by_class: Dict[str, List[List]] = {}
+        for g in groups:
+            by_class.setdefault(g[0].source.test_class, []).append(g)
+
+        merge_index = 0
+        for test_class, class_groups in by_class.items():
             spec_name = class_to_kebab(test_class.removesuffix("Tests")) + ".spec.js"
             blocks: List[str] = []
             uses_data, uses_config = False, False
 
-            for tim in tims:
-                ir_test = ir_tests.get(f"test:{tim.source.test_class}.{tim.source.test_method}")
-                if ir_test is None:
+            for group in class_groups:
+                translated = []
+                for tim in group:
+                    ir_test = ir_tests.get(f"test:{tim.source.test_class}.{tim.source.test_method}")
+                    if ir_test is None:
+                        continue
+                    translated.append((tim, self._translate_test(tim, ir_test, spec_name)))
+                if not translated:
                     continue
-                coverage = {"test_id": tim.test_id, "spec": f"tests/{spec_name}",
-                            "title": f"{tim.test_id} Â· {tim.name}", "steps": [], "assertions": []}
+                uses_data = uses_data or any(tr["uses_data"] for _, tr in translated)
+                uses_config = uses_config or any(tr["uses_config"] for _, tr in translated)
 
-                env: Dict[str, str] = {}
-                body_lines: List[str] = []
-                assertion_iter = iter(tim.assertions)
-                # steps not bound to the shared fixture, in order, for comments
-                step_iter = iter([s for s in tim.steps
-                                  if s.binding_ref and not s.binding_ref.startswith("helper:")])
-
-                fixture_steps = [s for s in tim.steps if s.binding_ref and s.binding_ref.startswith("helper:")]
-                for s in fixture_steps:
-                    body_lines.append(f"// [{s.step_id}] {s.description} (via fixture, confidence {s.confidence})")
-                    coverage["steps"].append({"step_id": s.step_id, "realized_by": "fixtures/guest-flow.js"})
-                if fixture_steps:
-                    body_lines.append("")
-
-                for stmt in split_statements(ir_test["body"]):
-                    norm = re.sub(r"\s+", " ", stmt).strip()
-                    am = re.match(r"Assert\s*\.\s*(assert\w+)\s*\((.*)\)\s*;?$", norm, re.DOTALL)
-                    if am:
-                        a = next(assertion_iter, None)
-                        if a:
-                            body_lines.append(f"// [{a.assertion_id}] {a.description} (confidence {a.confidence})")
-                            if a.failure_meaning:
-                                body_lines.append(f"//   failure means: {a.failure_meaning}")
-                            coverage["assertions"].append(
-                                {"assertion_id": a.assertion_id, "realized_by": f"tests/{spec_name}"}
-                            )
-                        args = split_top_level(am.group(2))
-                        kind = am.group(1)
-                        if kind in ("assertEquals", "assertNotEquals"):
-                            actual = self.tr_expr(args[0], env)
-                            expected = self.tr_expr(args[1], env)
-                            msg = f", {args[2]}" if len(args) > 2 else ""
-                            matcher = "toBe" if kind == "assertEquals" else "not.toBe"
-                            body_lines.append(f"expect({actual}{msg}).{matcher}({expected});")
-                        else:
-                            cond = self.tr_expr(args[0], env)
-                            msg = f", {args[1]}" if len(args) > 1 else ""
-                            expected = "true" if kind == "assertTrue" else "false"
-                            body_lines.append(f"expect({cond}{msg}).toBe({expected});")
-                        body_lines.append("")
-                        if "expected." in " ".join(body_lines) or "findDrugByKey" in " ".join(body_lines):
-                            uses_data = True
-                        if "config." in " ".join(body_lines):
-                            uses_config = True
+                if len(translated) > 1:
+                    merge_index += 1
+                    merged = self._merged_block(translated, spec_name, merge_index)
+                    if merged is not None:
+                        blocks.append(merged)
+                        for _tim, tr in translated:
+                            self.report["tim_coverage"].append(tr["coverage"])
                         continue
 
-                    step = next(step_iter, None)
-                    if step and "findDrugByKey" not in norm:
-                        body_lines.append(f"// [{step.step_id}] {step.description} (confidence {step.confidence})")
-                        coverage["steps"].append({"step_id": step.step_id, "realized_by": f"tests/{spec_name}"})
-                    elif step and "findDrugByKey" in norm:
-                        # data-loading statements aren't TIM interaction steps; put it back
-                        step_iter = _push_back(step, step_iter)
-                    before = len(body_lines)
-                    if not self.tr_flow_stmt(stmt, env, body_lines, fixture_var="medicineSearchPage"):
-                        body_lines.append(f"// TODO(review): untranslated statement: {norm}")
-                    if any("findDrugByKey" in ln for ln in body_lines[before:]):
-                        uses_data = True
-                    if any("config." in ln for ln in body_lines[before:]):
-                        uses_config = True
-                    body_lines.append("")
+                for tim, tr in translated:
+                    blocks.append(self._single_block(tim, tr))
+                    self.report["tim_coverage"].append(tr["coverage"])
 
-                annotations = [
-                    f"{{ type: 'tim', description: {js_str(tim.test_id + ' — ' + tim.business_capability + f' (overall confidence {tim.overall_confidence})')} }}",
-                    f"{{ type: 'source', description: {js_str('selenium:' + tim.source.test_class + '.' + tim.source.test_method)} }}",
-                ]
-                desc_comment = ["  /**"] + [f"   * {ln}" for ln in _wrap(tim.description, 74)] + ["   */"]
-                block = "\n".join(desc_comment) + "\n" + "\n".join([
-                    f"  test({js_str(tim.test_id + ' Â· ' + tim.name)}, {{",
-                    f"    annotation: [{', '.join(annotations)}],",
-                    "  }, async ({ medicineSearchPage, page }) => {",
-                ] + [("    " + ln).rstrip() for ln in body_lines] + [
-                    "  });",
-                ])
-                blocks.append(block)
-                self.report["tim_coverage"].append(coverage)
+            if not blocks:
+                continue
 
             imports = [
                 "// @ts-check",
@@ -809,9 +952,11 @@ class PlaywrightJsGenerator:
             if uses_config:
                 imports.append("import { config } from '../config/framework-config.js';")
 
+            describe = (self.suite.tests[0].business_capability
+                        if len(by_class) == 1 else test_class)
             content = (
                 "\n".join(imports)
-                + f"\n\ntest.describe({js_str(self.suite.tests[0].business_capability if len(by_class) == 1 else test_class)}, () => {{\n"
+                + f"\n\ntest.describe({js_str(describe)}, () => {{\n"
                 + "\n\n".join(blocks)
                 + "\n});\n"
             )

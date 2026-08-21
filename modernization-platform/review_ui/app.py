@@ -27,6 +27,8 @@ WORKSPACE = PLATFORM.parent
 ART = PLATFORM / "artifacts"
 TIM_FILE = ART / "tim" / "tim-suite.json"
 IR_FILE = ART / "ir" / "normalized_ir.json"
+PLAN_FILE = ART / "rationalization" / "plan.json"
+SIGNALS_FILE = ART / "rationalization" / "signals.json"
 GEN_FILE = ART / "reports" / "generation-report.json"
 EQ_FILE = ART / "reports" / "equivalence-report.json"
 SEL_RUN = ART / "runs" / "selenium-run.json"
@@ -36,11 +38,19 @@ NAVY, IB, GOLD, GREEN, AMBER, RED, GREY = (
     "#002060", "#0070C0", "#FFC000", "#00703C", "#C55A11", "#B00020", "#6D6D6D"
 )
 
+PURPLE, SLATE = "#7030A0", "#4A4A6A"
+
 VERDICT_COLORS = {
     "EQUIVALENT": GREEN,
     "PARTIALLY_EQUIVALENT": AMBER,
     "NOT_EQUIVALENT": RED,
     "BLOCKED": GREY,
+    "NOT_MIGRATED": SLATE,
+}
+DISPOSITIONS = ["MIGRATE", "MERGE", "SPLIT", "REDESIGN", "RETIRE", "DEFER"]
+DISPOSITION_COLORS = {
+    "MIGRATE": IB, "MERGE": PURPLE, "SPLIT": PURPLE,
+    "REDESIGN": AMBER, "RETIRE": SLATE, "DEFER": SLATE,
 }
 STATUS_COLORS = {"passed": GREEN, "failed": RED, "skipped": GREY, "missing": GREY}
 REVIEW_COLORS = {"pending": AMBER, "approved": GREEN, "rejected": RED}
@@ -66,6 +76,35 @@ def load(path: Path):
 
 def save_tim(tim: dict) -> None:
     TIM_FILE.write_text(json.dumps(tim, indent=2), encoding="utf-8")
+
+
+def save_plan(plan: dict) -> None:
+    PLAN_FILE.write_text(json.dumps(plan, indent=2), encoding="utf-8")
+
+
+def recompute_plan_summary(plan: dict) -> None:
+    """Keep the portfolio numbers true after a human override."""
+    by_disp: dict = {}
+    for d in plan["decisions"]:
+        by_disp[d["disposition"]] = by_disp.get(d["disposition"], 0) + 1
+    not_migrated = [d["test_id"] for d in plan["decisions"] if d["disposition"] in ("RETIRE", "DEFER")]
+    live_groups = [
+        g for g in plan.get("merge_groups", [])
+        if sum(1 for m in g["member_test_ids"]
+               if next((d for d in plan["decisions"] if d["test_id"] == m), {}).get("disposition") == "MERGE") > 1
+    ]
+    signals = load(SIGNALS_FILE) or {}
+    reclaimed = sum(
+        (signals.get("tests", {}).get(t, {}) or {}).get("legacy_duration_s") or 0 for t in not_migrated
+    )
+    plan["summary"] = {
+        "total_tests": len(plan["decisions"]),
+        "by_disposition": by_disp,
+        "implementations_eliminated": sum(max(len(g["member_test_ids"]) - 1, 0) for g in live_groups)
+        + len(not_migrated),
+        "legacy_runtime_reclaimed_s": round(reclaimed, 2),
+        "tests_not_migrated": not_migrated,
+    }
 
 
 def spec_slice(spec_text: str, test_id: str) -> str:
@@ -103,6 +142,8 @@ gen = load(GEN_FILE)
 eq = load(EQ_FILE)
 sel_run = load(SEL_RUN)
 pw_run = load(PW_RUN)
+plan = load(PLAN_FILE)
+signals = load(SIGNALS_FILE)
 
 if not tim or not ir:
     st.error("Missing TIM/IR artifacts — run `python pipeline.py ingest` and `understand` first.")
@@ -110,6 +151,7 @@ if not tim or not ir:
 
 eq_by_id = {r["test_id"]: r for r in (eq or {}).get("results", [])}
 cov_by_id = {c["test_id"]: c for c in (gen or {}).get("tim_coverage", [])}
+dec_by_id = {d["test_id"]: d for d in (plan or {}).get("decisions", [])}
 
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
@@ -117,6 +159,7 @@ with st.sidebar:
     for label, path, data in (
         ("Normalized IR", IR_FILE, ir),
         ("Test Intent Model", TIM_FILE, tim),
+        ("Rationalization plan", PLAN_FILE, plan),
         ("Generation report", GEN_FILE, gen),
         ("Legacy run evidence", SEL_RUN, sel_run),
         ("Modern run evidence", PW_RUN, pw_run),
@@ -146,6 +189,61 @@ c5.metric("Needs attention",
 
 st.divider()
 
+# ------------------------------------------------------------- portfolio view
+if plan:
+    st.markdown("### Portfolio decision")
+    st.write(plan.get("portfolio_narrative", ""))
+
+    summary = plan.get("summary") or {}
+    counts = summary.get("by_disposition") or {}
+    st.markdown(
+        " ".join(badge(f"{d} {counts[d]}", DISPOSITION_COLORS[d]) for d in DISPOSITIONS if d in counts)
+        + f" &nbsp;&nbsp; implementations eliminated: <b>{summary.get('implementations_eliminated', 0)}</b>"
+        + (f" &nbsp;·&nbsp; legacy runtime reclaimed: <b>{summary['legacy_runtime_reclaimed_s']}s</b>"
+           if summary.get("legacy_runtime_reclaimed_s") else ""),
+        unsafe_allow_html=True,
+    )
+
+    rows = []
+    for t in tim["tests"]:
+        d = dec_by_id.get(t["test_id"], {})
+        rows.append({
+            "test": t["test_id"],
+            "name": t["name"],
+            "disposition": d.get("disposition", "—"),
+            "decided by": d.get("decided_by", "—"),
+            "confidence": d.get("confidence"),
+            "value": d.get("business_value", "—"),
+            "cost": d.get("migration_cost", "—"),
+            "rationale": d.get("rationale", ""),
+        })
+    st.dataframe(rows, width="stretch", hide_index=True)
+
+    for m in (gen or {}).get("merges", []):
+        if m.get("realized"):
+            st.success(
+                f"Merge {m['group_id']} realized: {', '.join(m['members'])} share one parameterized "
+                f"implementation in `{m['spec']}` (parameters: {', '.join(m.get('parameters', []))}). "
+                "Every merged intent still runs as its own case under its own TIM id."
+            )
+        else:
+            st.warning(
+                f"Merge {m['group_id']} refused by the generator: {m.get('reason')} — "
+                f"{', '.join(m['members'])} were emitted separately, so no coverage was dropped."
+            )
+    for s in (gen or {}).get("skipped_by_disposition", []):
+        st.info(f"{s['test_id']} not generated [{s['disposition']}]: {s['reason']}")
+
+    st.caption(
+        "Dispositions are AI proposals backed by deterministic signals (artifacts/rationalization/"
+        "signals.json). Override any of them below — the platform recomputes the portfolio numbers "
+        "and records the decision as human-made."
+    )
+    st.divider()
+else:
+    st.info("No rationalization plan yet — run `python pipeline.py rationalize` to decide what each "
+            "recovered intent should become before generating.")
+
 # ---------------------------------------------------------------- per test
 tabs = st.tabs([f"{t['test_id']} · {t['provenance']['review_status'].upper()}" for t in tim["tests"]])
 
@@ -153,6 +251,7 @@ for tab, test in zip(tabs, tim["tests"]):
     tid = test["test_id"]
     eq_r = eq_by_id.get(tid)
     cov = cov_by_id.get(tid)
+    dec = dec_by_id.get(tid)
 
     with tab:
         left, right = st.columns([3, 1])
@@ -161,6 +260,7 @@ for tab, test in zip(tabs, tim["tests"]):
             st.markdown(
                 badge(test["business_capability"], IB) + " "
                 + badge(f"risk {test['risk']}", NAVY) + " "
+                + (badge(dec["disposition"], DISPOSITION_COLORS[dec["disposition"]]) + " " if dec else "")
                 + conf_badge(test["overall_confidence"]) + " "
                 + (badge(eq_r["verdict"], VERDICT_COLORS[eq_r["verdict"]]) if eq_r else badge("NOT ASSESSED", GREY))
                 + " " + badge(test["provenance"]["review_status"],
@@ -263,6 +363,75 @@ for tab, test in zip(tabs, tim["tests"]):
             for reason in eq_r["reasons"]:
                 st.markdown(f"- {reason}")
             st.info(f"Recommendation: **{eq_r['recommendation']}**")
+
+        if dec:
+            st.markdown("**Portfolio decision — what should happen to this intent**")
+            st.markdown(
+                badge(dec["disposition"], DISPOSITION_COLORS[dec["disposition"]]) + " "
+                + conf_badge(dec["confidence"]) + " "
+                + badge(f"decided by {dec.get('decided_by', 'ai')}",
+                        GREEN if dec.get("decided_by") == "human" else GREY)
+                + f" &nbsp; value **{dec.get('business_value')}** · cost **{dec.get('migration_cost')}**",
+                unsafe_allow_html=True,
+            )
+            st.write(dec["rationale"])
+            for extra_key, label in (("blocked_by", "Blocked by"), ("redesign_note", "Redesign"),
+                                     ("group_id", "Merge group")):
+                if dec.get(extra_key):
+                    suffix = " (primary)" if extra_key == "group_id" and dec.get("primary") else ""
+                    st.markdown(f"- **{label}:** {dec[extra_key]}{suffix}")
+            if dec.get("split_targets"):
+                st.markdown("- **Split into:** " + "; ".join(dec["split_targets"]))
+
+            with st.expander("Signals cited as evidence"):
+                sig = (signals or {}).get("tests", {}).get(tid, {})
+                for ev in dec.get("evidence", []):
+                    st.markdown(f"- `{ev['signal_ref']}` — {ev['detail']}")
+                if sig:
+                    st.markdown(
+                        f"Computed for this test: **{sig['assertion_count']}** assertions "
+                        f"(**{sig['oracle_backed_assertions']}** oracle-backed, "
+                        f"**{len(sig['app_independent_assertions'])}** reading no application state), "
+                        f"**{sig['step_count']}** steps across {len(sig['distinct_pages'])} page objects, "
+                        f"legacy runtime {sig.get('legacy_duration_s', '—')}s, "
+                        f"fully regenerable: **{sig.get('feasibility', {}).get('fully_regenerable')}**."
+                    )
+                for r in (signals or {}).get("redundancy", []):
+                    if tid in r["pair"]:
+                        other = [p for p in r["pair"] if p != tid][0]
+                        st.markdown(
+                            f"- redundancy vs **{other}**: score **{r['score']}** "
+                            f"(steps {r['step_intent_jaccard']}, bindings {r['binding_jaccard']}, "
+                            f"assertions {r['assertion_shape_jaccard']})"
+                        )
+
+            ov1, ov2, ov3 = st.columns([1, 2, 1])
+            with ov1:
+                new_disp = st.selectbox("Override disposition", DISPOSITIONS,
+                                        index=DISPOSITIONS.index(dec["disposition"]),
+                                        key=f"disp_{tid}")
+            with ov2:
+                disp_note = st.text_input("Reason for the override", key=f"dispnote_{tid}",
+                                          value=dec.get("reviewer_notes") or "")
+
+            def _override(tid=tid, disp_key=f"disp_{tid}", note_key=f"dispnote_{tid}"):
+                d = next(x for x in plan["decisions"] if x["test_id"] == tid)
+                d["disposition"] = st.session_state[disp_key]
+                d["reviewer_notes"] = st.session_state[note_key] or None
+                d["decided_by"] = "human"
+                d["decided_at"] = datetime.now(timezone.utc).isoformat()
+                recompute_plan_summary(plan)
+                save_plan(plan)
+
+            with ov3:
+                st.write("")
+                st.button("Save disposition", key=f"savedisp_{tid}", on_click=_override,
+                          width="stretch",
+                          disabled=(new_disp == dec["disposition"]
+                                    and disp_note == (dec.get("reviewer_notes") or "")))
+            st.caption("Changing a disposition here does not regenerate anything — "
+                       "re-run `python pipeline.py generate` to apply it.")
+            st.divider()
 
         st.markdown("**Reviewer decision**")
         note_key, dec_cols = f"note_{tid}", st.columns([2, 1, 1])

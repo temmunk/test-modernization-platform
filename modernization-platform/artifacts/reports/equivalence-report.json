@@ -1,22 +1,55 @@
 {
-  "assessed_at": "2026-08-18T18:40:27.191939+00:00",
+  "assessed_at": "2026-08-21T01:09:01.962403+00:00",
   "suite_name": "DrugCoverageTests",
   "summary": {
     "EQUIVALENT": 3,
     "PARTIALLY_EQUIVALENT": 0,
     "NOT_EQUIVALENT": 0,
-    "BLOCKED": 0
+    "BLOCKED": 0,
+    "NOT_MIGRATED": 0
+  },
+  "portfolio": {
+    "narrative": "This is a small, high-confidence estate of three guest-facing drug coverage tests, all fully regenerable with no unresolved bindings. Two of the three tests are the same scenario wearing different drug data \u2014 a generic-on-formulary case and a brand-non-formulary case walk identical steps and identical assertion shapes \u2014 so they collapse into one parameterized regeneration instead of two maintained implementations. The third test proves a distinct, unrelated capability (health plan context propagation) and is migrated unchanged. Net effect: one fewer implementation to maintain going forward with zero loss of asserted coverage.",
+    "summary": {
+      "total_tests": 3,
+      "by_disposition": {
+        "MERGE": 2,
+        "MIGRATE": 1
+      },
+      "implementations_eliminated": 1,
+      "legacy_runtime_reclaimed_s": 0.0,
+      "tests_not_migrated": []
+    },
+    "merges": [
+      {
+        "group_id": "drug-formulary-lookup-merge",
+        "primary": "TIM-001",
+        "members": [
+          "TIM-001",
+          "TIM-002"
+        ],
+        "spec": "tests/drug-coverage.spec.js",
+        "realized": true,
+        "parameters": [
+          "a5Message",
+          "a7Expected",
+          "a7Message",
+          "drugKey"
+        ]
+      }
+    ],
+    "skipped": []
   },
   "legacy_run": {
     "command": "mvn -B test",
-    "started_at": "2026-08-18T18:32:32.114091+00:00",
-    "finished_at": "2026-08-18T18:33:21.879972+00:00",
+    "started_at": "2026-08-21T01:07:06.897154+00:00",
+    "finished_at": "2026-08-21T01:08:02.473595+00:00",
     "exit_code": 0
   },
   "modern_run": {
-    "command": "npx playwright test --project=chromium --headed",
-    "started_at": "2026-08-18T18:39:25.646337+00:00",
-    "finished_at": "2026-08-18T18:40:09.760396+00:00",
+    "command": "npx playwright test --project=chromium",
+    "started_at": "2026-08-21T01:08:02.493597+00:00",
+    "finished_at": "2026-08-21T01:08:54.693641+00:00",
     "exit_code": 0
   },
   "results": [
@@ -36,9 +69,14 @@
           "src/test/resources/testdata/expected-drugs.json"
         ]
       },
+      "disposition": "MERGE",
+      "disposition_rationale": "This test and TIM-002 walk the identical guest-plan-search-detail flow against the identical page bindings, differing only in which drug is searched and what formulary status is expected. Keeping them as two hand-written implementations doubles maintenance cost for zero additional business coverage; folding them into one parameterized test proves both the on-formulary generic case and the non-formulary brand case from a single implementation.",
       "generated": {
         "spec": "tests/drug-coverage.spec.js",
-        "title": "TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage"
+        "title": "TIM-001 \u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
+        "merged_with": [
+          "TIM-002"
+        ]
       },
       "checks": {
         "flow_match": {
@@ -61,14 +99,14 @@
         "test_class": "DrugCoverageTests",
         "test_method": "genericDrug_isOnDrugList_withCorrectTierAndDosage",
         "status": "passed",
-        "duration_s": 16.823,
+        "duration_s": 19.518,
         "failure_message": null
       },
       "modern_execution": {
-        "title": "TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
+        "title": "TIM-001 \u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
         "tim_id": "TIM-001",
         "status": "passed",
-        "duration_s": 16.2,
+        "duration_s": 19.71,
         "failure_message": null,
         "annotations": [
           {
@@ -76,8 +114,8 @@
             "description": "TIM-001 \u2014 Drug Coverage Lookup (overall confidence 0.87)",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 16,
-              "column": 7
+              "line": 30,
+              "column": 9
             }
           },
           {
@@ -85,8 +123,17 @@
             "description": "selenium:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 16,
-              "column": 7
+              "line": 30,
+              "column": 9
+            }
+          },
+          {
+            "type": "merged",
+            "description": "rationalization group drug-formulary-lookup-merge",
+            "location": {
+              "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
+              "line": 30,
+              "column": 9
             }
           }
         ]
@@ -95,6 +142,7 @@
       "reasons": [
         "All 3 intent steps are realized in the generated framework.",
         "All 7 business assertions are regenerated with the same oracle data.",
+        "Realized as one parameterized implementation shared with TIM-002 (rationalization group drug-formulary-lookup-merge); this intent still executes as its own case against its own expected values.",
         "Both implementations executed against the live application and verified the same expected values (both passed)."
       ],
       "recommendation": "Approve migration"
@@ -115,9 +163,14 @@
           "src/test/resources/testdata/expected-drugs.json"
         ]
       },
+      "disposition": "MERGE",
+      "disposition_rationale": "Proves the non-formulary brand-drug counterpart of the same coverage-lookup scenario as TIM-001, using the same steps and page bindings with only the drug data and expected formulary status differing. This is a data variation of one intent, not a second distinct test, so it should be folded into the merged implementation as a second parameterized case.",
       "generated": {
         "spec": "tests/drug-coverage.spec.js",
-        "title": "TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary"
+        "title": "TIM-002 \u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
+        "merged_with": [
+          "TIM-001"
+        ]
       },
       "checks": {
         "flow_match": {
@@ -140,14 +193,14 @@
         "test_class": "DrugCoverageTests",
         "test_method": "brandDrug_isNotOnDrugList_nonFormulary",
         "status": "passed",
-        "duration_s": 17.699,
+        "duration_s": 20.201,
         "failure_message": null
       },
       "modern_execution": {
-        "title": "TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
+        "title": "TIM-002 \u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
         "tim_id": "TIM-002",
         "status": "passed",
-        "duration_s": 16.11,
+        "duration_s": 19.95,
         "failure_message": null,
         "annotations": [
           {
@@ -155,8 +208,8 @@
             "description": "TIM-002 \u2014 Drug Coverage Lookup (overall confidence 0.87)",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 68,
-              "column": 7
+              "line": 30,
+              "column": 9
             }
           },
           {
@@ -164,8 +217,17 @@
             "description": "selenium:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 68,
-              "column": 7
+              "line": 30,
+              "column": 9
+            }
+          },
+          {
+            "type": "merged",
+            "description": "rationalization group drug-formulary-lookup-merge",
+            "location": {
+              "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
+              "line": 30,
+              "column": 9
             }
           }
         ]
@@ -174,6 +236,7 @@
       "reasons": [
         "All 3 intent steps are realized in the generated framework.",
         "All 7 business assertions are regenerated with the same oracle data.",
+        "Realized as one parameterized implementation shared with TIM-001 (rationalization group drug-formulary-lookup-merge); this intent still executes as its own case against its own expected values.",
         "Both implementations executed against the live application and verified the same expected values (both passed)."
       ],
       "recommendation": "Approve migration"
@@ -192,9 +255,12 @@
           "src/main/java/com/myprime/automation/pages/MedicineSearchPage.java"
         ]
       },
+      "disposition": "MIGRATE",
+      "disposition_rationale": "This test proves a distinct, business-critical concern \u2014 that the plan a guest selects is the plan actually reflected during their coverage lookup \u2014 with no meaningful overlap to the drug-coverage tests. It is cheap to run, fully regenerable, and carries a genuine application-reading assertion, so it should be ported as-is.",
       "generated": {
         "spec": "tests/drug-coverage.spec.js",
-        "title": "TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page"
+        "title": "TIM-003 \u00b7 Selected health plan is reflected on the Find Medicines page",
+        "merged_with": []
       },
       "checks": {
         "flow_match": {
@@ -217,14 +283,14 @@
         "test_class": "DrugCoverageTests",
         "test_method": "selectedHealthPlan_isDisplayedOnFindMedicinesPage",
         "status": "passed",
-        "duration_s": 11.019,
+        "duration_s": 10.578,
         "failure_message": null
       },
       "modern_execution": {
-        "title": "TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page",
+        "title": "TIM-003 \u00b7 Selected health plan is reflected on the Find Medicines page",
         "tim_id": "TIM-003",
         "status": "passed",
-        "duration_s": 9.23,
+        "duration_s": 9.36,
         "failure_message": null,
         "annotations": [
           {
@@ -232,7 +298,7 @@
             "description": "TIM-003 \u2014 Health Plan Selection (overall confidence 0.9)",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 118,
+              "line": 81,
               "column": 7
             }
           },
@@ -241,7 +307,7 @@
             "description": "selenium:DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage",
             "location": {
               "file": "C:\\Users\\timmu\\Documents\\Projects\\Test Migration Modernization\\migration-workspace\\playwright-framework\\tests\\drug-coverage.spec.js",
-              "line": 118,
+              "line": 81,
               "column": 7
             }
           }

@@ -7,107 +7,70 @@ import { config } from '../config/framework-config.js';
 
 test.describe("Drug Coverage Lookup", () => {
   /**
+   * Merged by the rationalization plan (group drug-formulary-lookup-merge):
+   *   TIM-001 - Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage, TIM-002 - Brand drug (LIPITOR) is shown as not on the drug list and non-formulary
+   *
+   * One implementation, one case per intent: every merged intent still runs
+   * its own expected values and still reports under its own TIM id.
+   * The inline commentary below is TIM-001's; each case replays it
+   * against its own data row.
+   *
    * Verifies that a guest member searching for the generic drug atorvastatin
    * calcium under the BCBS Alabama plan and SourceRx 1.0 Drug Guide sees
    * correct dosage/quantity information and is told the drug is on the plan's
    * drug list at Tier 1/Preferred Generic, both on the search results card and
    * on the detailed medicine page.
    */
-  test("TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage", {
-    annotation: [{ type: 'tim', description: "TIM-001 \u2014 Drug Coverage Lookup (overall confidence 0.87)" }, { type: 'source', description: "selenium:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage" }],
-  }, async ({ medicineSearchPage, page }) => {
-    // [S1] Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page. (via fixture, confidence 0.9)
+  const MERGED_CASES_1 = [
+    { timId: "TIM-001", name: "Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage", capability: "Drug Coverage Lookup", confidence: 0.87, source: "selenium:DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage", drugKey: "ATORVASTATIN_GENERIC", a5Message: "Expected this generic to be marked \"On drug list\" on the details page", a7Expected: true, a7Message: "Test data sanity check: this drug should be flagged onDrugList=true" },
+    { timId: "TIM-002", name: "Brand drug (LIPITOR) is shown as not on the drug list and non-formulary", capability: "Drug Coverage Lookup", confidence: 0.87, source: "selenium:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary", drugKey: "LIPITOR_BRAND", a5Message: "Expected this brand drug to be marked \"Not on drug list\" on the details page", a7Expected: false, a7Message: "Test data sanity check: this drug should be flagged onDrugList=false" },
+  ];
 
-    const expected = findDrugByKey("ATORVASTATIN_GENERIC");
+  for (const testCase of MERGED_CASES_1) {
+    test(`${testCase.timId} \u00b7 ${testCase.name}`, {
+      annotation: [{ type: 'tim', description: `${testCase.timId} \u2014 ${testCase.capability} (overall confidence ${testCase.confidence})` }, { type: 'source', description: testCase.source }, { type: 'merged', description: "rationalization group drug-formulary-lookup-merge" }],
+    }, async ({ medicineSearchPage, page }) => {
+      // [S1] Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page. (via fixture, confidence 0.9)
 
-    // [S2] Search for 'atorvastatin', select the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it to the results. (confidence 0.9)
-    const searchPage = medicineSearchPage;
-    await searchPage.addMedicine(expected.searchTerm, expected.suggestionText, expected.strength, expected.quantity, expected.frequency);
+      const expected = findDrugByKey(testCase.drugKey);
 
-    // [A1] The dosage and quantity summary on the search-result card for atorvastatin calcium matches the expected 20mg tablet / 30 tablets over 30 days regimen. (confidence 0.9)
-    //   failure means: A member could see incorrect dosage or quantity information for this generic drug, leading to confusion about how much medication they will receive.
-    expect(await searchPage.getCardDoseInfo(expected.expectedName), "Dose info on the result card did not match expected dosage/quantity").toBe(expected.expectedDoseInfo);
+      // [S2] Search for 'atorvastatin', select the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it to the results. (confidence 0.9)
+      const searchPage = medicineSearchPage;
+      await searchPage.addMedicine(expected.searchTerm, expected.suggestionText, expected.strength, expected.quantity, expected.frequency);
 
-    // [A2] The result card correctly labels atorvastatin calcium as On drug list, Tier 1/Preferred Generic. (confidence 0.9)
-    //   failure means: A member would be shown the wrong drug-list/tier status for this generic, potentially causing them to believe it is not covered or costs more than it does.
-    expect(await searchPage.getCardFormularyText(expected.expectedName), "Formulary status on the result card did not match expected value").toBe(expected.cardFormularyText);
+      // [A1] The dosage and quantity summary on the search-result card for atorvastatin calcium matches the expected 20mg tablet / 30 tablets over 30 days regimen. (confidence 0.9)
+      //   failure means: A member could see incorrect dosage or quantity information for this generic drug, leading to confusion about how much medication they will receive.
+      expect(await searchPage.getCardDoseInfo(expected.expectedName), "Dose info on the result card did not match expected dosage/quantity").toBe(expected.expectedDoseInfo);
 
-    // [S3] Open the detailed medicine page for atorvastatin calcium to review its dosage and drug-list status in more depth. (confidence 0.85)
-    const detailsPage = await searchPage.openMedicineDetails(expected.expectedName);
+      // [A2] The result card correctly labels atorvastatin calcium as On drug list, Tier 1/Preferred Generic. (confidence 0.9)
+      //   failure means: A member would be shown the wrong drug-list/tier status for this generic, potentially causing them to believe it is not covered or costs more than it does.
+      expect(await searchPage.getCardFormularyText(expected.expectedName), "Formulary status on the result card did not match expected value").toBe(expected.cardFormularyText);
 
-    // [A3] The medicine details page identifies the drug as atorvastatin calcium, confirming the correct medicine was opened. (confidence 0.8)
-    //   failure means: A member could land on details for the wrong drug, undermining confidence in search accuracy.
-    expect(await detailsPage.getDrugName()).toBe(expected.expectedName);
+      // [S3] Open the detailed medicine page for atorvastatin calcium to review its dosage and drug-list status in more depth. (confidence 0.85)
+      const detailsPage = await searchPage.openMedicineDetails(expected.expectedName);
 
-    // [A4] The medicine details page shows the same expected dosage/quantity information as the result card for atorvastatin calcium. (confidence 0.85)
-    //   failure means: A member reviewing the detail page could be misled about the correct dosage or quantity for this drug.
-    expect(await detailsPage.getDoseInfo()).toBe(expected.expectedDoseInfo);
+      // [A3] The medicine details page identifies the drug as atorvastatin calcium, confirming the correct medicine was opened. (confidence 0.8)
+      //   failure means: A member could land on details for the wrong drug, undermining confidence in search accuracy.
+      expect(await detailsPage.getDrugName()).toBe(expected.expectedName);
 
-    // [A5] The details page's formulary heading confirms this generic drug is 'On drug list'. (confidence 0.95)
-    //   failure means: A member could be incorrectly told this covered generic drug is not on their drug list, causing them to avoid a lower-cost option or seek an unnecessary formulary exception.
-    expect(await detailsPage.getFormularyStatusHeading(), "Expected this generic to be marked \"On drug list\" on the details page").toBe(expected.detailFormularyHeading);
+      // [A4] The medicine details page shows the same expected dosage/quantity information as the result card for atorvastatin calcium. (confidence 0.85)
+      //   failure means: A member reviewing the detail page could be misled about the correct dosage or quantity for this drug.
+      expect(await detailsPage.getDoseInfo()).toBe(expected.expectedDoseInfo);
 
-    // [A6] The details page's tier heading confirms atorvastatin calcium is classified as Tier 1/Preferred Generic. (confidence 0.85)
-    //   failure means: A member could be shown the wrong cost tier for this generic, leading to incorrect expectations about their out-of-pocket cost.
-    expect(await detailsPage.getTierHeading()).toBe(expected.detailTierHeading);
+      // [A5] The details page's formulary heading confirms this generic drug is 'On drug list'. (confidence 0.95)
+      //   failure means: A member could be incorrectly told this covered generic drug is not on their drug list, causing them to avoid a lower-cost option or seek an unnecessary formulary exception.
+      expect(await detailsPage.getFormularyStatusHeading(), testCase.a5Message).toBe(expected.detailFormularyHeading);
 
-    // [A7] Sanity-checks that the oracle test data itself flags atorvastatin calcium as being on the drug list, guarding against a stale or corrupted expected-data file skewing the test's meaning. (confidence 0.6)
-    //   failure means: If this sanity check fails, the oracle data itself is inconsistent, meaning the other assertions in this test cannot be trusted regardless of what the site displays.
-    expect(expected.onDrugList, "Test data sanity check: this drug should be flagged onDrugList=true").toBe(true);
+      // [A6] The details page's tier heading confirms atorvastatin calcium is classified as Tier 1/Preferred Generic. (confidence 0.85)
+      //   failure means: A member could be shown the wrong cost tier for this generic, leading to incorrect expectations about their out-of-pocket cost.
+      expect(await detailsPage.getTierHeading()).toBe(expected.detailTierHeading);
 
-  });
+      // [A7] Sanity-checks that the oracle test data itself flags atorvastatin calcium as being on the drug list, guarding against a stale or corrupted expected-data file skewing the test's meaning. (confidence 0.6)
+      //   failure means: If this sanity check fails, the oracle data itself is inconsistent, meaning the other assertions in this test cannot be trusted regardless of what the site displays.
+      expect(expected.onDrugList, testCase.a7Message).toBe(testCase.a7Expected);
 
-  /**
-   * Verifies that a guest member searching for the brand drug LIPITOR under
-   * the BCBS Alabama plan and SourceRx 1.0 Drug Guide sees correct
-   * dosage/quantity information and is told the drug is not on the plan's drug
-   * list and is non-formulary, since its generic equivalent (atorvastatin
-   * calcium) is the preferred option, both on the search results card and the
-   * detailed medicine page.
-   */
-  test("TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary", {
-    annotation: [{ type: 'tim', description: "TIM-002 \u2014 Drug Coverage Lookup (overall confidence 0.87)" }, { type: 'source', description: "selenium:DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary" }],
-  }, async ({ medicineSearchPage, page }) => {
-    // [S1] Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page. (via fixture, confidence 0.9)
-
-    const expected = findDrugByKey("LIPITOR_BRAND");
-
-    // [S2] Search for 'Lipitor', select the matching autocomplete suggestion, and specify the drug's strength, quantity, and frequency to add it to the results. (confidence 0.9)
-    const searchPage = medicineSearchPage;
-    await searchPage.addMedicine(expected.searchTerm, expected.suggestionText, expected.strength, expected.quantity, expected.frequency);
-
-    // [A1] The dosage and quantity summary on the search-result card for LIPITOR matches the expected 10mg tablet / 30 tablets over 30 days regimen. (confidence 0.9)
-    //   failure means: A member could see incorrect dosage or quantity information for this brand drug, leading to confusion about how it should be taken.
-    expect(await searchPage.getCardDoseInfo(expected.expectedName), "Dose info on the result card did not match expected dosage/quantity").toBe(expected.expectedDoseInfo);
-
-    // [A2] The result card correctly labels LIPITOR as Not on drug list, Non-formulary. (confidence 0.9)
-    //   failure means: A member would be shown the wrong drug-list/formulary status for this brand drug, potentially causing them to believe it is covered when it is not, resulting in unexpected out-of-pocket cost.
-    expect(await searchPage.getCardFormularyText(expected.expectedName), "Formulary status on the result card did not match expected value").toBe(expected.cardFormularyText);
-
-    // [S3] Open the detailed medicine page for LIPITOR to review its dosage and drug-list status in more depth. (confidence 0.85)
-    const detailsPage = await searchPage.openMedicineDetails(expected.expectedName);
-
-    // [A3] The medicine details page identifies the drug as LIPITOR, confirming the correct medicine was opened. (confidence 0.8)
-    //   failure means: A member could land on details for the wrong drug, undermining confidence in search accuracy.
-    expect(await detailsPage.getDrugName()).toBe(expected.expectedName);
-
-    // [A4] The medicine details page shows the same expected dosage/quantity information as the result card for LIPITOR. (confidence 0.85)
-    //   failure means: A member reviewing the detail page could be misled about the correct dosage or quantity for this drug.
-    expect(await detailsPage.getDoseInfo()).toBe(expected.expectedDoseInfo);
-
-    // [A5] The details page's formulary heading confirms this brand drug is 'Not on drug list'. (confidence 0.95)
-    //   failure means: A member could be incorrectly told this non-preferred brand drug is on their drug list, leading them to expect standard formulary coverage they don't actually have.
-    expect(await detailsPage.getFormularyStatusHeading(), "Expected this brand drug to be marked \"Not on drug list\" on the details page").toBe(expected.detailFormularyHeading);
-
-    // [A6] The details page's tier heading confirms LIPITOR is classified as Non-formulary. (confidence 0.85)
-    //   failure means: A member could be shown the wrong cost tier for this brand drug, leading to incorrect expectations about their out-of-pocket cost.
-    expect(await detailsPage.getTierHeading()).toBe(expected.detailTierHeading);
-
-    // [A7] Sanity-checks that the oracle test data itself flags LIPITOR as not being on the drug list, guarding against a stale or corrupted expected-data file skewing the test's meaning. (confidence 0.6)
-    //   failure means: If this sanity check fails, the oracle data itself is inconsistent, meaning the other assertions in this test cannot be trusted regardless of what the site displays.
-    expect(expected.onDrugList, "Test data sanity check: this drug should be flagged onDrugList=false").toBe(false);
-
-  });
+    });
+  }
 
   /**
    * Verifies that the health plan a guest chooses during the pre-login
@@ -115,7 +78,7 @@ test.describe("Drug Coverage Lookup", () => {
    * the Find Medicines page, confirming the plan context used for all
    * subsequent drug-coverage lookups is the one the member actually selected.
    */
-  test("TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page", {
+  test("TIM-003 \u00b7 Selected health plan is reflected on the Find Medicines page", {
     annotation: [{ type: 'tim', description: "TIM-003 \u2014 Health Plan Selection (overall confidence 0.9)" }, { type: 'source', description: "selenium:DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage" }],
   }, async ({ medicineSearchPage, page }) => {
     // [S1] Enter MyPrime as a guest (without signing in), select the BCBS Alabama health plan, and apply the SourceRx 1.0 Drug Guide drug list, landing on the Find Medicines page. (via fixture, confidence 0.9)

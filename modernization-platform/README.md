@@ -11,11 +11,43 @@ Implements the hackathon vision: **understand legacy → recover intent → rege
 python pipeline.py ingest       1. Selenium adapter -> Normalized Technical IR (deterministic, no AI)
 python pipeline.py understand   2. IR -> Test Intent Model via Claude (structured output, schema-validated,
                                    referentially cross-checked against the IR, provenance-stamped)
-python pipeline.py generate     3. TIM + IR -> Playwright framework (enterprise blueprint playwright-js-v1)
-python pipeline.py execute      4. Run BOTH suites against live myprime.com, capture evidence
-python pipeline.py compare      5. Behavioral equivalence assessment -> JSON + HTML report
+python pipeline.py rationalize  3. TIM + deterministic signals -> portfolio decision per intent
+                                   (MIGRATE / MERGE / SPLIT / REDESIGN / RETIRE / DEFER)
+python pipeline.py generate     4. TIM + IR + plan -> Playwright framework (blueprint playwright-js-v1)
+python pipeline.py execute      5. Run BOTH suites against live myprime.com, capture evidence
+python pipeline.py compare      6. Behavioral equivalence assessment -> JSON + HTML report
 python pipeline.py all          Everything in order
 ```
+
+## Rationalization — deciding what deserves to be migrated
+
+A 1:1 port of every legacy test is the failure mode of test modernization, not the goal.
+Between understanding and generation the platform makes a **portfolio decision** for each
+recovered intent, and it does it in two halves:
+
+- **Deterministic first** (`rationalization/signals.py`, no AI): pairwise redundancy scores
+  over step intents, bindings and data-masked assertion shapes; how much each test actually
+  proves (oracle-backed vs assertions that read no application state at all); what it costs
+  (legacy runtime, steps, page objects); and whether the platform can regenerate it, measured
+  by a throwaway dry run of the generator.
+- **Judgement second** (`rationalization/service.py`): Claude assigns a disposition and writes
+  the business rationale, and every rationale must cite a signal by dotted path. Refs that are
+  not in the pack are rejected and fed back.
+
+The gate that matters is the **merge floor**: a `MERGE` is refused unless every pair in the
+group has a computed redundancy score above `--merge-floor` (default 0.5). An LLM will happily
+call two tests redundant because their names rhyme; a number decides instead.
+
+**Merging consolidates implementations, never coverage.** When a merge group is realized, the
+generator diffs the members' translated bodies and lifts the differing *literals* into a case
+table, emitting one parameterized test with one case per intent — each keeping its own expected
+values and reporting under its own TIM id. If the bodies differ anywhere that is not a literal,
+the merge is **refused**, the blocking statement is reported, and the members are emitted
+separately. The platform never drops an assertion to make a consolidation look good.
+
+`RETIRE` and `DEFER` tests are not generated; they are recorded in the generation report and
+scored `NOT_MIGRATED` by the equivalence engine rather than showing up as false gaps.
+`--ignore-plan` on `generate` (or `--skip-rationalize` on `all`) restores the 1:1 behavior.
 
 ## Human Review Workbench
 
@@ -23,7 +55,9 @@ python pipeline.py all          Everything in order
 python -m streamlit run review_ui/app.py
 ```
 
-Opens at http://localhost:8501. Shows, per TIM test: recovered intent (steps +
+Opens at http://localhost:8501. Opens with the portfolio view — every intent's disposition,
+the rationale, and the signals behind it, with an override control that records the decision
+as human-made and recomputes the portfolio numbers. Then, per TIM test: recovered intent (steps +
 assertions with confidence, evidence, and oracle values resolved), legacy vs
 generated code side by side, execution evidence, and the equivalence verdict
 with its reasons. Approve/Reject writes `provenance.review_status` (+ notes,
@@ -45,6 +79,9 @@ Also requires: Maven + JDK 17 (legacy suite), Node + Playwright browsers (`npx p
 - **Deterministic before AI** — parsing, reference resolution, code emission, and equivalence checks are all deterministic; the LLM only recovers business meaning.
 - **Structured AI output** — the understanding service demands schema-conformant JSON, retries with validation feedback, and rejects any binding/data reference that doesn't resolve against the IR (anti-hallucination gate).
 - **Evidence over confidence** — every TIM step/assertion carries confidence + file/line evidence; provenance (model, prompt version, timestamp, review status) is stamped by the platform, never by the model.
+- **Decide before you build** — rationalization runs before generation, so redundant, obsolete
+  and blocked intents are dealt with as decisions rather than as migrated code nobody wanted.
+  Every disposition cites a deterministic signal, and a human can override any of them.
 - **Regeneration over translation** — timing quirks the legacy code encoded (AJAX-populated selects, sign-in nag, autocomplete retries) are regenerated as named blueprint patterns, not transliterated line by line.
 - **Explainable equivalence** — the report says *why* each migration is equivalent: flow match, assertion match, and live execution outcome match, per test.
 
@@ -54,9 +91,19 @@ Also requires: Maven + JDK 17 (legacy suite), Node + Playwright browsers (`npx p
 adapters/selenium_java/   deterministic Java parser -> IR
 tim/                      TIM Pydantic models + validators (guardrails)
 understanding/            prompts + Claude API service
+rationalization/          signal pack, plan models, guardrails, decision service, tests
 blueprints/playwright_js/ enterprise blueprint (conventions, patterns, static modules)
-generators/               Playwright generation engine
+generators/               Playwright generation engine + merge parameterization
 execution/                mvn / npx playwright runners + evidence capture
 equivalence/              behavioral equivalence engine + HTML report
-artifacts/                ir/ tim/ runs/ reports/  (pipeline outputs)
+artifacts/                ir/ tim/ rationalization/ runs/ reports/  (pipeline outputs)
 ```
+
+## Tests
+
+```
+python -m pytest rationalization/tests -q
+```
+
+Covers the signal maths, every rationalization guardrail rejection path, and merge
+parameterization (including the cases where a merge must be refused).

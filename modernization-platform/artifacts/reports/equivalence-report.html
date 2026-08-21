@@ -15,70 +15,84 @@ ul{font-size:0.85rem;}
 .stat b{display:block;font-size:1.6rem;color:#0070C0;}
 </style></head><body>
 <h1>Behavioral Equivalence Report</h1>
-<p class="cap">DrugCoverageTests — assessed 2026-08-18T18:40:27.191939+00:00</p>
+<p class="cap">DrugCoverageTests — assessed 2026-08-21T01:09:01.962403+00:00</p>
 <div class="summary">
   <div class="stat"><b>3</b>Equivalent</div>
   <div class="stat"><b>0</b>Partially</div>
   <div class="stat"><b>0</b>Not equivalent</div>
   <div class="stat"><b>0</b>Blocked</div>
+  <div class="stat"><b>0</b>Not migrated<br><span style="font-size:0.7rem;color:#6D6D6D;">by decision</span></div>
+</div>
+
+<div class="card">
+  <h3>Portfolio decision</h3>
+  <p>This is a small, high-confidence estate of three guest-facing drug coverage tests, all fully regenerable with no unresolved bindings. Two of the three tests are the same scenario wearing different drug data — a generic-on-formulary case and a brand-non-formulary case walk identical steps and identical assertion shapes — so they collapse into one parameterized regeneration instead of two maintained implementations. The third test proves a distinct, unrelated capability (health plan context propagation) and is migrated unchanged. Net effect: one fewer implementation to maintain going forward with zero loss of asserted coverage.</p>
+  <p><span style="margin-right:0.6rem;"><span style="background:#7030A0;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">MERGE</span> 2</span><span style="margin-right:0.6rem;"><span style="background:#0070C0;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">MIGRATE</span> 1</span></p>
+  <p class="cap">Implementations eliminated: <strong>1</strong>
+     &nbsp;·&nbsp; legacy runtime reclaimed: <strong>0.0s</strong></p>
+  <p><strong>Merges</strong></p><ul><li>drug-formulary-lookup-merge: TIM-001, TIM-002 → one parameterized implementation (a5Message, a7Expected, a7Message, drugKey)</li></ul>
+  
 </div>
 
     <div class="card">
       <div class="card-head">
         <h3>TIM-001 · Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage</h3>
-        <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
+        <span><span style="background:#7030A0;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">MERGE</span> <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span></span>
       </div>
       <p class="cap">Drug Coverage Lookup — intent confidence 0.87</p>
+      <p class="cap"><strong>Disposition:</strong> This test and TIM-002 walk the identical guest-plan-search-detail flow against the identical page bindings, differing only in which drug is searched and what formulary status is expected. Keeping them as two hand-written implementations doubles maintenance cost for zero additional business coverage; folding them into one parameterized test proves both the on-formulary generic case and the non-formulary brand case from a single implementation.</p>
       <table>
         <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
         <tr><td>Implementation</td>
             <td>DrugCoverageTests.genericDrug_isOnDrugList_withCorrectTierAndDosage</td>
             <td>tests/drug-coverage.spec.js</td></tr>
         <tr><td>Outcome</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.823s</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.2s</td></tr>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 19.518s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 19.71s</td></tr>
       </table>
       <p><strong>Flow match:</strong> 3/3 steps
          &nbsp; <strong>Assertion match:</strong> 7/7 assertions</p>
-      <ul><li>All 3 intent steps are realized in the generated framework.</li><li>All 7 business assertions are regenerated with the same oracle data.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
+      <ul><li>All 3 intent steps are realized in the generated framework.</li><li>All 7 business assertions are regenerated with the same oracle data.</li><li>Realized as one parameterized implementation shared with TIM-002 (rationalization group drug-formulary-lookup-merge); this intent still executes as its own case against its own expected values.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
       
       <p><strong>Recommendation:</strong> Approve migration</p>
     </div>
     <div class="card">
       <div class="card-head">
         <h3>TIM-002 · Brand drug (LIPITOR) is shown as not on the drug list and non-formulary</h3>
-        <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
+        <span><span style="background:#7030A0;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">MERGE</span> <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span></span>
       </div>
       <p class="cap">Drug Coverage Lookup — intent confidence 0.87</p>
+      <p class="cap"><strong>Disposition:</strong> Proves the non-formulary brand-drug counterpart of the same coverage-lookup scenario as TIM-001, using the same steps and page bindings with only the drug data and expected formulary status differing. This is a data variation of one intent, not a second distinct test, so it should be folded into the merged implementation as a second parameterized case.</p>
       <table>
         <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
         <tr><td>Implementation</td>
             <td>DrugCoverageTests.brandDrug_isNotOnDrugList_nonFormulary</td>
             <td>tests/drug-coverage.spec.js</td></tr>
         <tr><td>Outcome</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 17.699s</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 16.11s</td></tr>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 20.201s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 19.95s</td></tr>
       </table>
       <p><strong>Flow match:</strong> 3/3 steps
          &nbsp; <strong>Assertion match:</strong> 7/7 assertions</p>
-      <ul><li>All 3 intent steps are realized in the generated framework.</li><li>All 7 business assertions are regenerated with the same oracle data.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
+      <ul><li>All 3 intent steps are realized in the generated framework.</li><li>All 7 business assertions are regenerated with the same oracle data.</li><li>Realized as one parameterized implementation shared with TIM-001 (rationalization group drug-formulary-lookup-merge); this intent still executes as its own case against its own expected values.</li><li>Both implementations executed against the live application and verified the same expected values (both passed).</li></ul>
       
       <p><strong>Recommendation:</strong> Approve migration</p>
     </div>
     <div class="card">
       <div class="card-head">
         <h3>TIM-003 · Selected health plan is reflected on the Find Medicines page</h3>
-        <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span>
+        <span><span style="background:#0070C0;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">MIGRATE</span> <span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">EQUIVALENT</span></span>
       </div>
       <p class="cap">Health Plan Selection — intent confidence 0.9</p>
+      <p class="cap"><strong>Disposition:</strong> This test proves a distinct, business-critical concern — that the plan a guest selects is the plan actually reflected during their coverage lookup — with no meaningful overlap to the drug-coverage tests. It is cheap to run, fully regenerable, and carries a genuine application-reading assertion, so it should be ported as-is.</p>
       <table>
         <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
         <tr><td>Implementation</td>
             <td>DrugCoverageTests.selectedHealthPlan_isDisplayedOnFindMedicinesPage</td>
             <td>tests/drug-coverage.spec.js</td></tr>
         <tr><td>Outcome</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 11.019s</td>
-            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 9.23s</td></tr>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 10.578s</td>
+            <td><span style="background:#00703C;color:#fff;padding:2px 10px;border-radius:10px;font-size:0.78rem;font-weight:600;">passed</span> in 9.36s</td></tr>
       </table>
       <p><strong>Flow match:</strong> 1/1 steps
          &nbsp; <strong>Assertion match:</strong> 1/1 assertions</p>

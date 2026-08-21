@@ -1,0 +1,132 @@
+{
+  "plan_version": "1.0",
+  "suite_name": "DrugCoverageTests",
+  "portfolio_narrative": "This is a small, high-confidence estate of three guest-facing drug coverage tests, all fully regenerable with no unresolved bindings. Two of the three tests are the same scenario wearing different drug data \u2014 a generic-on-formulary case and a brand-non-formulary case walk identical steps and identical assertion shapes \u2014 so they collapse into one parameterized regeneration instead of two maintained implementations. The third test proves a distinct, unrelated capability (health plan context propagation) and is migrated unchanged. Net effect: one fewer implementation to maintain going forward with zero loss of asserted coverage.",
+  "decisions": [
+    {
+      "test_id": "TIM-001",
+      "disposition": "MERGE",
+      "rationale": "This test and TIM-002 walk the identical guest-plan-search-detail flow against the identical page bindings, differing only in which drug is searched and what formulary status is expected. Keeping them as two hand-written implementations doubles maintenance cost for zero additional business coverage; folding them into one parameterized test proves both the on-formulary generic case and the non-formulary brand case from a single implementation.",
+      "confidence": 0.9,
+      "business_value": "high",
+      "migration_cost": "medium",
+      "evidence": [
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-002.score",
+          "detail": "0.925 redundancy, well above the 0.5 merge floor"
+        },
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-002.step_intent_jaccard",
+          "detail": "1.0 \u2014 identical step sequence and intent"
+        },
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-002.binding_jaccard",
+          "detail": "1.0 \u2014 identical page/method bindings"
+        },
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-002.assertion_shape_jaccard",
+          "detail": "0.75 \u2014 nearly identical assertion shapes, differing only in which formulary outcome is expected"
+        }
+      ],
+      "group_id": "drug-formulary-lookup-merge",
+      "primary": true,
+      "split_targets": [],
+      "target_channel": null,
+      "redesign_note": null,
+      "blocked_by": null,
+      "decided_by": "ai",
+      "decided_at": "2026-08-21T01:06:15.962527+00:00",
+      "reviewer_notes": null
+    },
+    {
+      "test_id": "TIM-002",
+      "disposition": "MERGE",
+      "rationale": "Proves the non-formulary brand-drug counterpart of the same coverage-lookup scenario as TIM-001, using the same steps and page bindings with only the drug data and expected formulary status differing. This is a data variation of one intent, not a second distinct test, so it should be folded into the merged implementation as a second parameterized case.",
+      "confidence": 0.9,
+      "business_value": "high",
+      "migration_cost": "low",
+      "evidence": [
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-002.score",
+          "detail": "0.925 redundancy with TIM-001, well above merge floor"
+        },
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-002.differing",
+          "detail": "Only the drug data row and the on/off drug-list sanity flag differ between the two tests"
+        }
+      ],
+      "group_id": "drug-formulary-lookup-merge",
+      "primary": false,
+      "split_targets": [],
+      "target_channel": null,
+      "redesign_note": null,
+      "blocked_by": null,
+      "decided_by": "ai",
+      "decided_at": "2026-08-21T01:06:15.962527+00:00",
+      "reviewer_notes": null
+    },
+    {
+      "test_id": "TIM-003",
+      "disposition": "MIGRATE",
+      "rationale": "This test proves a distinct, business-critical concern \u2014 that the plan a guest selects is the plan actually reflected during their coverage lookup \u2014 with no meaningful overlap to the drug-coverage tests. It is cheap to run, fully regenerable, and carries a genuine application-reading assertion, so it should be ported as-is.",
+      "confidence": 0.92,
+      "business_value": "medium",
+      "migration_cost": "low",
+      "evidence": [
+        {
+          "signal_ref": "redundancy.TIM-001~TIM-003.score",
+          "detail": "0.2333 \u2014 well below the merge floor, confirming this is a distinct intent"
+        },
+        {
+          "signal_ref": "redundancy.TIM-002~TIM-003.score",
+          "detail": "0.2333 \u2014 likewise no meaningful overlap with the brand-drug test"
+        },
+        {
+          "signal_ref": "tests.TIM-003.feasibility.fully_regenerable",
+          "detail": "Generator dry-run confirms the single step and assertion fully regenerate"
+        },
+        {
+          "signal_ref": "suite.distinct_business_capabilities",
+          "detail": "Health Plan Selection is a separate capability from Drug Coverage Lookup"
+        }
+      ],
+      "group_id": null,
+      "primary": null,
+      "split_targets": [],
+      "target_channel": null,
+      "redesign_note": null,
+      "blocked_by": null,
+      "decided_by": "ai",
+      "decided_at": "2026-08-21T01:06:15.962527+00:00",
+      "reviewer_notes": null
+    }
+  ],
+  "merge_groups": [
+    {
+      "group_id": "drug-formulary-lookup-merge",
+      "primary_test_id": "TIM-001",
+      "member_test_ids": [
+        "TIM-001",
+        "TIM-002"
+      ],
+      "rationale": "Both tests execute the identical guest entry, plan/drug-list configuration, search-and-add, and detail-view steps against identical page bindings; the only variation is the drug searched (generic vs. brand) and the resulting formulary/tier text, including a mirrored test-data sanity check on the on/off drug-list flag. This is a single coverage-lookup intent parameterized over drug data, not two distinct tests, so the platform should regenerate one parameterized test with two cases."
+    }
+  ],
+  "summary": {
+    "total_tests": 3,
+    "by_disposition": {
+      "MERGE": 2,
+      "MIGRATE": 1
+    },
+    "implementations_eliminated": 1,
+    "legacy_runtime_reclaimed_s": 0.0,
+    "tests_not_migrated": []
+  },
+  "provenance": {
+    "model_version": "claude-sonnet-5",
+    "prompt_version": "rationalization_v1",
+    "extracted_at": "2026-08-21T01:06:15.962527+00:00",
+    "review_status": "pending",
+    "reviewer_notes": null
+  }
+}

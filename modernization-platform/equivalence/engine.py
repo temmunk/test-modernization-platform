@@ -14,20 +14,72 @@ import json
 from datetime import datetime, timezone
 
 
-VERDICTS = ("EQUIVALENT", "PARTIALLY_EQUIVALENT", "NOT_EQUIVALENT", "BLOCKED")
+VERDICTS = ("EQUIVALENT", "PARTIALLY_EQUIVALENT", "NOT_EQUIVALENT", "BLOCKED", "NOT_MIGRATED")
+
+# Dispositions that deliberately produce no modern implementation. A missing
+# counterpart for one of these is a recorded decision, not an equivalence gap —
+# scoring it as BLOCKED would be a false alarm.
+NOT_MIGRATED_DISPOSITIONS = ("RETIRE", "DEFER")
 
 
-def assess(tim_suite: dict, gen_report: dict, selenium_run: dict, playwright_run: dict) -> dict:
+def assess(
+    tim_suite: dict,
+    gen_report: dict,
+    selenium_run: dict,
+    playwright_run: dict,
+    plan: dict | None = None,
+) -> dict:
     coverage_by_id = {c["test_id"]: c for c in gen_report.get("tim_coverage", [])}
     legacy_by_method = {
         (t["test_class"], t["test_method"]): t for t in selenium_run.get("tests", [])
     }
     modern_by_tim = {t["tim_id"]: t for t in playwright_run.get("tests", []) if t.get("tim_id")}
 
+    decisions = {d["test_id"]: d for d in (plan or {}).get("decisions", [])}
+    merge_of = {
+        m: g for g in gen_report.get("merges", []) if g.get("realized")
+        for m in g.get("members", [])
+    }
+
     results = []
     for tim in tim_suite["tests"]:
         tid = tim["test_id"]
         reasons, checks = [], {}
+        decision = decisions.get(tid)
+
+        if decision and decision["disposition"] in NOT_MIGRATED_DISPOSITIONS:
+            legacy = legacy_by_method.get((tim["source"]["test_class"], tim["source"]["test_method"]))
+            results.append(
+                {
+                    "test_id": tid,
+                    "name": tim["name"],
+                    "business_capability": tim["business_capability"],
+                    "overall_confidence": tim["overall_confidence"],
+                    "source": tim["source"],
+                    "disposition": decision["disposition"],
+                    "disposition_rationale": decision["rationale"],
+                    "generated": {"spec": None, "title": None},
+                    "checks": {
+                        "flow_match": {"realized": 0, "total": len(tim["steps"]), "ok": None},
+                        "assertion_match": {"realized": 0, "total": len(tim["assertions"]), "ok": None},
+                        "outcome_match": {"ok": None},
+                    },
+                    "legacy_execution": legacy,
+                    "modern_execution": None,
+                    "verdict": "NOT_MIGRATED",
+                    "reasons": [
+                        f"Not migrated by decision ({decision['disposition']}): {decision['rationale']}",
+                        (f"Blocked by: {decision['blocked_by']}" if decision.get("blocked_by")
+                         else "No modern counterpart is expected, so no equivalence is claimed."),
+                        f"Decision made by {decision.get('decided_by', 'ai')} with confidence "
+                        f"{decision.get('confidence')}.",
+                    ],
+                    "recommendation": (
+                        "Confirm the decision in the review workbench — nothing to compare"
+                    ),
+                }
+            )
+            continue
 
         cov = coverage_by_id.get(tid)
         n_steps = len(tim["steps"])
@@ -54,6 +106,14 @@ def assess(tim_suite: dict, gen_report: dict, selenium_run: dict, playwright_run
             reasons.append(f"All {n_asserts} business assertions are regenerated with the same oracle data.")
         else:
             reasons.append(f"Only {asserts_realized}/{n_asserts} business assertions realized in generated code.")
+
+        if tid in merge_of:
+            others = [m for m in merge_of[tid]["members"] if m != tid]
+            reasons.append(
+                f"Realized as one parameterized implementation shared with {', '.join(others)} "
+                f"(rationalization group {merge_of[tid]['group_id']}); this intent still executes "
+                f"as its own case against its own expected values."
+            )
 
         legacy = legacy_by_method.get((tim["source"]["test_class"], tim["source"]["test_method"]))
         modern = modern_by_tim.get(tid)
@@ -105,7 +165,13 @@ def assess(tim_suite: dict, gen_report: dict, selenium_run: dict, playwright_run
                 "business_capability": tim["business_capability"],
                 "overall_confidence": tim["overall_confidence"],
                 "source": tim["source"],
-                "generated": {"spec": cov["spec"] if cov else None, "title": cov["title"] if cov else None},
+                "disposition": decision["disposition"] if decision else None,
+                "disposition_rationale": decision["rationale"] if decision else None,
+                "generated": {
+                    "spec": cov["spec"] if cov else None,
+                    "title": cov["title"] if cov else None,
+                    "merged_with": [m for m in merge_of[tid]["members"] if m != tid] if tid in merge_of else [],
+                },
                 "checks": checks,
                 "legacy_execution": legacy,
                 "modern_execution": modern,
@@ -121,10 +187,19 @@ def assess(tim_suite: dict, gen_report: dict, selenium_run: dict, playwright_run
         )
 
     summary = {v: sum(1 for r in results if r["verdict"] == v) for v in VERDICTS}
+    portfolio = None
+    if plan:
+        portfolio = {
+            "narrative": plan.get("portfolio_narrative"),
+            "summary": plan.get("summary"),
+            "merges": [m for m in gen_report.get("merges", [])],
+            "skipped": gen_report.get("skipped_by_disposition", []),
+        }
     return {
         "assessed_at": datetime.now(timezone.utc).isoformat(),
         "suite_name": tim_suite["suite_name"],
         "summary": summary,
+        "portfolio": portfolio,
         "legacy_run": {k: selenium_run.get(k) for k in ("command", "started_at", "finished_at", "exit_code")},
         "modern_run": {k: playwright_run.get(k) for k in ("command", "started_at", "finished_at", "exit_code")},
         "results": results,
@@ -137,6 +212,13 @@ _BADGE = {
     "PARTIALLY_EQUIVALENT": ("#C55A11", "#fff"),
     "NOT_EQUIVALENT": ("#B00020", "#fff"),
     "BLOCKED": ("#6D6D6D", "#fff"),
+    "NOT_MIGRATED": ("#4A4A6A", "#fff"),
+    "MIGRATE": ("#0070C0", "#fff"),
+    "MERGE": ("#7030A0", "#fff"),
+    "SPLIT": ("#7030A0", "#fff"),
+    "REDESIGN": ("#C55A11", "#fff"),
+    "RETIRE": ("#4A4A6A", "#fff"),
+    "DEFER": ("#4A4A6A", "#fff"),
     "passed": ("#00703C", "#fff"),
     "failed": ("#B00020", "#fff"),
     "skipped": ("#6D6D6D", "#fff"),
@@ -170,9 +252,10 @@ def render_html(assessment: dict) -> str:
     <div class="card">
       <div class="card-head">
         <h3>{e(r['test_id'])} · {e(r['name'])}</h3>
-        {_badge(r['verdict'])}
+        <span>{_badge(r['disposition']) + ' ' if r.get('disposition') else ''}{_badge(r['verdict'])}</span>
       </div>
       <p class="cap">{e(r['business_capability'])} — intent confidence {r['overall_confidence']}</p>
+      {f'<p class="cap"><strong>Disposition:</strong> {e(r["disposition_rationale"])}</p>' if r.get('disposition_rationale') else ''}
       <table>
         <tr><th></th><th>Legacy (Selenium/TestNG)</th><th>Modern (Playwright)</th></tr>
         <tr><td>Implementation</td>
@@ -190,6 +273,36 @@ def render_html(assessment: dict) -> str:
     </div>""")
 
     s = assessment["summary"]
+    portfolio = assessment.get("portfolio") or {}
+    p_summary = portfolio.get("summary") or {}
+    portfolio_html = ""
+    if portfolio:
+        disp = "".join(
+            f'<span style="margin-right:0.6rem;">{_badge(k)} {v}</span>'
+            for k, v in sorted((p_summary.get("by_disposition") or {}).items())
+        )
+        merged_html = "".join(
+            f"<li>{e(m['group_id'])}: {e(', '.join(m['members']))} → "
+            + ("one parameterized implementation ("
+               + e(", ".join(m.get("parameters", []))) + ")" if m.get("realized")
+               else "<strong>merge refused</strong> — " + e(m.get("reason") or ""))
+            + "</li>"
+            for m in portfolio.get("merges", [])
+        )
+        skipped_html = "".join(
+            f"<li>{e(x['test_id'])} — {_badge(x['disposition'])} {e(x['reason'])}</li>"
+            for x in portfolio.get("skipped", [])
+        )
+        portfolio_html = f"""
+<div class="card">
+  <h3>Portfolio decision</h3>
+  <p>{e(portfolio.get('narrative') or '')}</p>
+  <p>{disp}</p>
+  <p class="cap">Implementations eliminated: <strong>{p_summary.get('implementations_eliminated', 0)}</strong>
+     &nbsp;·&nbsp; legacy runtime reclaimed: <strong>{p_summary.get('legacy_runtime_reclaimed_s', 0)}s</strong></p>
+  {'<p><strong>Merges</strong></p><ul>' + merged_html + '</ul>' if merged_html else ''}
+  {'<p><strong>Not migrated by decision</strong></p><ul>' + skipped_html + '</ul>' if skipped_html else ''}
+</div>"""
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><title>Behavioral Equivalence Report</title>
 <style>
@@ -213,7 +326,9 @@ ul{{font-size:0.85rem;}}
   <div class="stat"><b>{s['PARTIALLY_EQUIVALENT']}</b>Partially</div>
   <div class="stat"><b>{s['NOT_EQUIVALENT']}</b>Not equivalent</div>
   <div class="stat"><b>{s['BLOCKED']}</b>Blocked</div>
+  <div class="stat"><b>{s['NOT_MIGRATED']}</b>Not migrated<br><span style="font-size:0.7rem;color:#6D6D6D;">by decision</span></div>
 </div>
+{portfolio_html}
 {''.join(rows)}
 </body></html>
 """

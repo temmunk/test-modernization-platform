@@ -1,7 +1,13 @@
 {
-  "generated_at": "2026-08-18T18:39:17.716302+00:00",
+  "generated_at": "2026-08-21T01:07:00.825540+00:00",
   "blueprint": "playwright-js-v1",
   "target_root": "playwright-framework",
+  "plan_applied": true,
+  "dispositions": {
+    "TIM-001": "MERGE",
+    "TIM-002": "MERGE",
+    "TIM-003": "MIGRATE"
+  },
   "files": [
     "config/framework-config.js",
     "pages/base-page.js",
@@ -151,7 +157,7 @@
     {
       "test_id": "TIM-001",
       "spec": "tests/drug-coverage.spec.js",
-      "title": "TIM-001 \u00c2\u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
+      "title": "TIM-001 \u00b7 Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
       "steps": [
         {
           "step_id": "S1",
@@ -200,7 +206,7 @@
     {
       "test_id": "TIM-002",
       "spec": "tests/drug-coverage.spec.js",
-      "title": "TIM-002 \u00c2\u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
+      "title": "TIM-002 \u00b7 Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
       "steps": [
         {
           "step_id": "S1",
@@ -249,7 +255,7 @@
     {
       "test_id": "TIM-003",
       "spec": "tests/drug-coverage.spec.js",
-      "title": "TIM-003 \u00c2\u00b7 Selected health plan is reflected on the Find Medicines page",
+      "title": "TIM-003 \u00b7 Selected health plan is reflected on the Find Medicines page",
       "steps": [
         {
           "step_id": "S1",
@@ -261,6 +267,25 @@
           "assertion_id": "A1",
           "realized_by": "tests/drug-coverage.spec.js"
         }
+      ]
+    }
+  ],
+  "skipped_by_disposition": [],
+  "merges": [
+    {
+      "group_id": "drug-formulary-lookup-merge",
+      "primary": "TIM-001",
+      "members": [
+        "TIM-001",
+        "TIM-002"
+      ],
+      "spec": "tests/drug-coverage.spec.js",
+      "realized": true,
+      "parameters": [
+        "a5Message",
+        "a7Expected",
+        "a7Message",
+        "drugKey"
       ]
     }
   ]

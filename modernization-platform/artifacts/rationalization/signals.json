@@ -1,0 +1,219 @@
+{
+  "computed_at": "2026-08-21T01:05:43.834345+00:00",
+  "suite_name": "DrugCoverageTests",
+  "weights": {
+    "step_intent": 0.4,
+    "binding": 0.3,
+    "assertion_shape": 0.3
+  },
+  "tests": {
+    "TIM-001": {
+      "name": "Generic drug (atorvastatin calcium) is shown as on the drug list with correct tier and dosage",
+      "business_capability": "Drug Coverage Lookup",
+      "risk": "high",
+      "step_count": 3,
+      "step_intents": [
+        "enter_as_guest_and_configure_plan",
+        "search_and_add_medicine",
+        "open_medicine_detail_view"
+      ],
+      "step_bindings": [
+        "helper:BaseTest.goToFindMedicinesAsGuest",
+        "method:MedicineSearchPage.addMedicine",
+        "method:MedicineSearchPage.openMedicineDetails"
+      ],
+      "assertion_count": 7,
+      "assertion_intents": [
+        "verify_result_card_dose_info",
+        "verify_result_card_formulary_status",
+        "verify_details_page_drug_name",
+        "verify_details_page_dose_info",
+        "verify_details_page_formulary_heading",
+        "verify_details_page_tier_heading",
+        "verify_test_data_sanity_on_drug_list_flag"
+      ],
+      "oracle_backed_assertions": 7,
+      "literal_backed_assertions": 0,
+      "app_independent_assertions": [
+        "A7"
+      ],
+      "unresolved_expected_refs": [],
+      "distinct_pages": [
+        "BaseTest",
+        "MedicineDetailsPage",
+        "MedicineSearchPage"
+      ],
+      "data_keys": [
+        "ATORVASTATIN_GENERIC"
+      ],
+      "overall_confidence": 0.87,
+      "min_step_confidence": 0.85,
+      "min_assertion_confidence": 0.6,
+      "low_confidence_items": [
+        "A7"
+      ],
+      "legacy_duration_s": 16.939,
+      "legacy_status": "passed",
+      "feasibility": {
+        "source": "generator dry-run",
+        "steps_realized": 3,
+        "assertions_realized": 7,
+        "unimplemented_bindings": [],
+        "partial_bindings": [],
+        "fully_regenerable": true
+      }
+    },
+    "TIM-002": {
+      "name": "Brand drug (LIPITOR) is shown as not on the drug list and non-formulary",
+      "business_capability": "Drug Coverage Lookup",
+      "risk": "high",
+      "step_count": 3,
+      "step_intents": [
+        "enter_as_guest_and_configure_plan",
+        "search_and_add_medicine",
+        "open_medicine_detail_view"
+      ],
+      "step_bindings": [
+        "helper:BaseTest.goToFindMedicinesAsGuest",
+        "method:MedicineSearchPage.addMedicine",
+        "method:MedicineSearchPage.openMedicineDetails"
+      ],
+      "assertion_count": 7,
+      "assertion_intents": [
+        "verify_result_card_dose_info",
+        "verify_result_card_formulary_status",
+        "verify_details_page_drug_name",
+        "verify_details_page_dose_info",
+        "verify_details_page_formulary_heading",
+        "verify_details_page_tier_heading",
+        "verify_test_data_sanity_off_drug_list_flag"
+      ],
+      "oracle_backed_assertions": 7,
+      "literal_backed_assertions": 0,
+      "app_independent_assertions": [
+        "A7"
+      ],
+      "unresolved_expected_refs": [],
+      "distinct_pages": [
+        "BaseTest",
+        "MedicineDetailsPage",
+        "MedicineSearchPage"
+      ],
+      "data_keys": [
+        "LIPITOR_BRAND"
+      ],
+      "overall_confidence": 0.87,
+      "min_step_confidence": 0.85,
+      "min_assertion_confidence": 0.6,
+      "low_confidence_items": [
+        "A7"
+      ],
+      "legacy_duration_s": 20.729,
+      "legacy_status": "passed",
+      "feasibility": {
+        "source": "generator dry-run",
+        "steps_realized": 3,
+        "assertions_realized": 7,
+        "unimplemented_bindings": [],
+        "partial_bindings": [],
+        "fully_regenerable": true
+      }
+    },
+    "TIM-003": {
+      "name": "Selected health plan is reflected on the Find Medicines page",
+      "business_capability": "Health Plan Selection",
+      "risk": "medium",
+      "step_count": 1,
+      "step_intents": [
+        "enter_as_guest_and_configure_plan"
+      ],
+      "step_bindings": [
+        "helper:BaseTest.goToFindMedicinesAsGuest"
+      ],
+      "assertion_count": 1,
+      "assertion_intents": [
+        "verify_selected_health_plan_displayed"
+      ],
+      "oracle_backed_assertions": 1,
+      "literal_backed_assertions": 0,
+      "app_independent_assertions": [],
+      "unresolved_expected_refs": [],
+      "distinct_pages": [
+        "BaseTest",
+        "MedicineSearchPage"
+      ],
+      "data_keys": [],
+      "overall_confidence": 0.9,
+      "min_step_confidence": 0.9,
+      "min_assertion_confidence": 0.95,
+      "low_confidence_items": [],
+      "legacy_duration_s": 10.694,
+      "legacy_status": "passed",
+      "feasibility": {
+        "source": "generator dry-run",
+        "steps_realized": 1,
+        "assertions_realized": 1,
+        "unimplemented_bindings": [],
+        "partial_bindings": [],
+        "fully_regenerable": true
+      }
+    }
+  },
+  "redundancy": [
+    {
+      "pair": [
+        "TIM-001",
+        "TIM-002"
+      ],
+      "step_intent_jaccard": 1.0,
+      "binding_jaccard": 1.0,
+      "assertion_shape_jaccard": 0.75,
+      "score": 0.925,
+      "identical_shape_different_data": false,
+      "differing": [
+        "data rows differ: ['ATORVASTATIN_GENERIC'] vs ['LIPITOR_BRAND']",
+        "assertion shapes only in TIM-001: ['verify_test_data_sanity_on_drug_list_flag|-|data:drugs.*.onDrugList']; only in TIM-002: ['verify_test_data_sanity_off_drug_list_flag|-|data:drugs.*.onDrugList']"
+      ]
+    },
+    {
+      "pair": [
+        "TIM-001",
+        "TIM-003"
+      ],
+      "step_intent_jaccard": 0.3333,
+      "binding_jaccard": 0.3333,
+      "assertion_shape_jaccard": 0.0,
+      "score": 0.2333,
+      "identical_shape_different_data": false,
+      "differing": [
+        "data rows differ: ['ATORVASTATIN_GENERIC'] vs ['-']",
+        "assertion shapes only in TIM-001: ['verify_details_page_dose_info|method:MedicineDetailsPage.getDoseInfo|data:drugs.*.expectedDoseInfo', 'verify_details_page_drug_name|method:MedicineDetailsPage.getDrugName|data:drugs.*.expectedName', 'verify_details_page_formulary_heading|method:MedicineDetailsPage.getFormularyStatusHeading|data:drugs.*.detailFormularyHeading', 'verify_details_page_tier_heading|method:MedicineDetailsPage.getTierHeading|data:drugs.*.detailTierHeading', 'verify_result_card_dose_info|method:MedicineSearchPage.getCardDoseInfo|data:drugs.*.expectedDoseInfo', 'verify_result_card_formulary_status|method:MedicineSearchPage.getCardFormularyText|data:drugs.*.cardFormularyText', 'verify_test_data_sanity_on_drug_list_flag|-|data:drugs.*.onDrugList']; only in TIM-003: ['verify_selected_health_plan_displayed|method:MedicineSearchPage.getSelectedHealthPlan|config:healthPlan']"
+      ]
+    },
+    {
+      "pair": [
+        "TIM-002",
+        "TIM-003"
+      ],
+      "step_intent_jaccard": 0.3333,
+      "binding_jaccard": 0.3333,
+      "assertion_shape_jaccard": 0.0,
+      "score": 0.2333,
+      "identical_shape_different_data": false,
+      "differing": [
+        "data rows differ: ['LIPITOR_BRAND'] vs ['-']",
+        "assertion shapes only in TIM-002: ['verify_details_page_dose_info|method:MedicineDetailsPage.getDoseInfo|data:drugs.*.expectedDoseInfo', 'verify_details_page_drug_name|method:MedicineDetailsPage.getDrugName|data:drugs.*.expectedName', 'verify_details_page_formulary_heading|method:MedicineDetailsPage.getFormularyStatusHeading|data:drugs.*.detailFormularyHeading', 'verify_details_page_tier_heading|method:MedicineDetailsPage.getTierHeading|data:drugs.*.detailTierHeading', 'verify_result_card_dose_info|method:MedicineSearchPage.getCardDoseInfo|data:drugs.*.expectedDoseInfo', 'verify_result_card_formulary_status|method:MedicineSearchPage.getCardFormularyText|data:drugs.*.cardFormularyText', 'verify_test_data_sanity_off_drug_list_flag|-|data:drugs.*.onDrugList']; only in TIM-003: ['verify_selected_health_plan_displayed|method:MedicineSearchPage.getSelectedHealthPlan|config:healthPlan']"
+      ]
+    }
+  ],
+  "suite": {
+    "total_tests": 3,
+    "total_assertions": 15,
+    "total_legacy_runtime_s": 48.36,
+    "distinct_business_capabilities": [
+      "Drug Coverage Lookup",
+      "Health Plan Selection"
+    ],
+    "max_redundancy_score": 0.925
+  }
+}
